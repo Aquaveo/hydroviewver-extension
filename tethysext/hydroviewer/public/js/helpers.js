@@ -12,12 +12,6 @@ function toggleAcc(layerID) {
     }
 }
 
-
-
-
-
-
-
 function get_available_dates(model, watershed, subbasin, comid) {
     if (model === 'ECMWF-RAPID') {
         $.ajax({

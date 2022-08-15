@@ -80,8 +80,8 @@ hundred_year_warning = new ol.layer.Vector({
 
 var stations_wms = new ol.layer.Image({
     source: new ol.source.ImageWMS({
-        url: JSON.parse($('#geoserver_endpoint').val())[0].replace(/\/$/, "")+'/wms',
-        // url: 'https://geoserver.hydroshare.org/geoserver/HS-9b6a7f2197ec403895bacebdca4d0074/wms',
+        // url: JSON.parse($('#geoserver_endpoint').val())[0].replace(/\/$/, "")+'/wms',
+        url: 'https://geoserver.hydroshare.org/geoserver/HS-9b6a7f2197ec403895bacebdca4d0074/wms',
         params: {'LAYERS':"SENAMHI_Stations_RT_v3"},
         serverType: 'geoserver',
         crossOrigin: 'Anonymous'
