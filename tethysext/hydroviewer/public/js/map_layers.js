@@ -90,12 +90,15 @@ var stations_wms = new ol.layer.Image({
 });
 
 
+var workspace = JSON.parse($('#geoserver_endpoint').val())[1];
+var model = $('#model option:selected').text();
+var watershed = $('#watershedSelect option:selected').text().split(' (')[0].replace(' ', '_').toLowerCase();
+var subbasin = $('#watershedSelect option:selected').text().split(' (')[1].replace(')', '').toLowerCase();
 
 var layerName = workspace + ':' + watershed + '-' + subbasin + '-geoglows-drainage_line';
 
         
-var sld_string = create_style(layerName,properties);
-console.log(sld_string)
+
 var properties = [
     {
         'names': 'region',
@@ -118,7 +121,8 @@ var properties = [
     
 ]
 
-
+var sld_string = create_style(layerName,properties);
+console.log(sld_string)
 
 var streams_wms = new ol.layer.Image({
     source: new ol.source.ImageWMS({

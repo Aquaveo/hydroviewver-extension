@@ -19,6 +19,7 @@ var default_extent,
     fifty_year_warning,
     hundred_year_warning,
     map,
+    feature_layer2,
     wms_layers;
 
 var $loading = $('#view-file-loading');
