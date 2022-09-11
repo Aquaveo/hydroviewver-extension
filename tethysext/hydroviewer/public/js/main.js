@@ -16,9 +16,16 @@ $(function() {
     // If there is a defined Watershed, then lets render it and hide the controls
     let ws_val = $('#watershed').find(":selected").text();
     if (ws_val && ws_val !== 'Select Watershed') {
+        console.log("hola")
         view_watershed();
         $("[name='update_button']").hide();
     }
+    else{
+        console.log("Iam here")
+        view_watershed();
+
+    }
+
     // If there is a button to save default WS, let's add handler
     $("[name='update_button']").click(() => {
         $.ajax({

@@ -9,7 +9,7 @@
 {% block app_content %}
   <div id="map" class="map">
       <div id="map-view-legend" class="map-view-legend ol-unselectable ol-control">
-          <div id="wmslegend0" hidden>
+          <!-- <div id="wmslegend0" hidden>
              <img src="http://128.187.106.130:80/glofas-proxy/glofas-ows-prod/?version=1.3.0&amp;service=WMS&amp;request=GetLegendGraphic&amp;sld_version=1.1.0&amp;layer=AccRainEGE&amp;format=image/png&amp;STYLE=default"/>
           </div>
           <div id="wmslegend1" hidden>
@@ -20,7 +20,7 @@
           </div>
           <div id="wmslegend3" hidden>
              <img src="http://128.187.106.130:80/glofas-proxy/glofas-ows-prod/?version=1.3.0&amp;service=WMS&amp;request=GetLegendGraphic&amp;sld_version=1.1.0&amp;layer=EGE_probRgt300&amp;format=image/png&amp;STYLE=default"/>
-          </div>
+          </div> -->
           <div>
               <svg width="20" height="20" viewPort="0 0 20 20" version="1.1"
                    xmlns="http://www.w3.org/2000/svg">
@@ -135,13 +135,7 @@
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 <div class="row">
                     <div id="station-info" class="col-md-8"></div>
-                    <div class="col-md-4">
-                        <div align="right">
-                          <img class="obslogos" src="{% static base_name|add:'/images/byu_logo.png' %}">
-                          <img class="obslogos" src="{% static base_name|add:'/images/my-icon.png' %}">
-                          <img class="obslogos" src="{% static base_name|add:'/images/Servir_logo.jpeg' %}">
-                        </div>
-                    </div>
+
                 </div>
                 <div id="interaction"></div>
             </div>
@@ -190,11 +184,7 @@
         <div class="row">
           <div id="watershed-info" class="col-md-8"></div>
           <div class="col-md-4">
-            <div align="right">
-              <img class="logos" src="{% static base_name|add:'/images/byu_logo.png' %}">
-              <img class="logos" src="{% static base_name|add:'/images/glofas_logo.png' %}">
-              <img class="logos" src="{% static base_name|add:'/images/copernicus_logo.png' %}">
-            </div>
+
           </div>
         </div>
         <div id="interaction"></div>

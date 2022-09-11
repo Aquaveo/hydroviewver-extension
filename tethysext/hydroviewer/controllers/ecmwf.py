@@ -26,9 +26,34 @@ from requests.auth import HTTPBasicAuth
 
 base_name = 'hydroviewer'
 
+#cs = custom setting
 class Ecmf:
     gizmo_template_name = 'hydroviewer/gizmo_ajax.html'
     
+    cs_streams_layer= 'Streams_Layer_Name'
+    cs_stations_layer= 'Stations_Layer_Name'
+    cs_api_source = 'api_source'
+    cs_reach_ids='reach_ids_path'
+    cs_zoom_info='zoom_info'
+    cs_workspace='workspace'
+    cs_region='region'
+    cs_geojson_path='static_GeoJSON_path'
+    cs_keywords='keywords'
+
+    # # parameterized constructor
+    # def __init__(self, cs_streams_layer, cs_stations_layer,cs_api_source,cs_reach_ids,cs_zoom_info,cs_workspace,cs_region,cs_geojson_path,cs_keywords):
+    #     self.cs_streams_layer = cs_streams_layer
+    #     self.cs_stations_layer = cs_stations_layer
+    #     self.cs_api_source = cs_api_source
+    #     self.cs_reach_ids = cs_reach_ids
+    #     self.cs_zoom_info = cs_zoom_info
+    #     self.cs_workspace=cs_workspace
+    #     self.cs_region=cs_region
+    #     self.cs_region=cs_geojson_path
+    #     self.cs_keywords= cs_keywords
+
+    #getters and setters for custom settings
+
     @staticmethod
     def _create_rp(df_):
         war = {}
@@ -62,11 +87,11 @@ class Ecmf:
             if get_data['startdate'] != '':
                 startdate = get_data['startdate']
                 res = requests.get(
-                    active_app.get_custom_setting('api_source') + '/api/ForecastStats/?reach_id=' + comid + '&date=' + startdate + '&return_format=csv',
+                    active_app.get_custom_setting(self.cs_api_source) + '/api/ForecastStats/?reach_id=' + comid + '&date=' + startdate + '&return_format=csv',
                     verify=False).content
             else:
                 res = requests.get(
-                    active_app.get_custom_setting('api_source') + '/api/ForecastStats/?reach_id=' + comid + '&return_format=csv',
+                    active_app.get_custom_setting(self.cs_api_source) + '/api/ForecastStats/?reach_id=' + comid + '&return_format=csv',
                     verify=False).content
 
             stats_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
@@ -82,7 +107,7 @@ class Ecmf:
 
             '''Getting Forecast Records'''
             res = requests.get(
-                active_app.get_custom_setting('api_source') + '/api/ForecastRecords/?reach_id=' + comid + '&return_format=csv',
+                active_app.get_custom_setting(self.cs_api_source) + '/api/ForecastRecords/?reach_id=' + comid + '&return_format=csv',
                 verify=False).content
 
             records_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
@@ -108,7 +133,7 @@ class Ecmf:
                 max_visible = max(max(records_df.max()), max_visible)
 
             '''Getting Return Periods'''
-            res = requests.get(active_app.get_custom_setting('api_source') + '/api/ReturnPeriods/?reach_id=' + comid + '&return_format=csv',
+            res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/ReturnPeriods/?reach_id=' + comid + '&return_format=csv',
                 verify=False).content
             rperiods_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
 
@@ -169,7 +194,7 @@ class Ecmf:
         subbasin = get_data['subbasin']
         comid = get_data['comid']
         res = requests.get(
-            active_app.get_custom_setting('api_source') + '/api/AvailableDates/?region=' + watershed + '-' + subbasin,
+            active_app.get_custom_setting(self.cs_api_source) + '/api/AvailableDates/?region=' + watershed + '-' + subbasin,
             verify=False)
 
         data = res.json()
@@ -211,7 +236,7 @@ class Ecmf:
             # model = get_data['model']
             comid = get_data['comid']
 
-            era_res = requests.get(active_app.get_custom_setting('api_source') + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv', verify=False).content
+            era_res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv', verify=False).content
 
             simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
             simulated_df[simulated_df < 0] = 0
@@ -221,7 +246,7 @@ class Ecmf:
 
             '''Getting Return Periods'''
             res = requests.get(
-                active_app.get_custom_setting('api_source') + '/api/ReturnPeriods/?reach_id=' + comid + '&return_format=csv',
+                active_app.get_custom_setting(self.cs_api_source) + '/api/ReturnPeriods/?reach_id=' + comid + '&return_format=csv',
                 verify=False).content
             rperiods_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
 
@@ -248,7 +273,7 @@ class Ecmf:
 
             comid = get_data['comid']
 
-            era_res = requests.get(active_app.get_custom_setting('api_source') + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv', verify=False).content
+            era_res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv', verify=False).content
 
             simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
             simulated_df[simulated_df < 0] = 0
@@ -283,7 +308,7 @@ class Ecmf:
             comid = get_data['comid']
 
             era_res = requests.get(
-                active_app.get_custom_setting('api_source') + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv',
+                active_app.get_custom_setting(self.cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv',
                 verify=False).content
 
             simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
@@ -320,7 +345,7 @@ class Ecmf:
             comid = get_data['comid']
 
             era_res = requests.get(
-                active_app.get_custom_setting('api_source') + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv',
+                active_app.get_custom_setting(self.cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv',
                 verify=False).content
 
             simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
@@ -361,7 +386,7 @@ class Ecmf:
             comid = get_data['reach_id']
 
             era_res = requests.get(
-                active_app.get_custom_setting('api_source') + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv',
+                active_app.get_custom_setting(self.cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv',
                 verify=False).content
 
             simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
@@ -405,11 +430,11 @@ class Ecmf:
                 startdate = get_data['startdate']
                 res = requests.get(
                     active_app.get_custom_setting(
-                        'api_source') + '/api/ForecastStats/?reach_id=' + comid + '&date=' + startdate + '&return_format=csv',
+                        self.cs_api_source) + '/api/ForecastStats/?reach_id=' + comid + '&date=' + startdate + '&return_format=csv',
                     verify=False).content
             else:
                 res = requests.get(
-                    active_app.get_custom_setting('api_source') + '/api/ForecastStats/?reach_id=' + comid + '&return_format=csv',
+                    active_app.get_custom_setting(self.cs_api_source) + '/api/ForecastStats/?reach_id=' + comid + '&return_format=csv',
                     verify=False).content
 
             stats_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
@@ -446,22 +471,22 @@ class Ecmf:
                 startdate = get_data['startdate']
                 res = requests.get(
                     active_app.get_custom_setting(
-                        'api_source') + '/api/ForecastStats/?reach_id=' + comid + '&date=' + startdate + '&return_format=csv',
+                        self.cs_api_source) + '/api/ForecastStats/?reach_id=' + comid + '&date=' + startdate + '&return_format=csv',
                     verify=False).content
 
                 ens = requests.get(
                     active_app.get_custom_setting(
-                        'api_source') + '/api/ForecastEnsembles/?reach_id=' + comid + '&date=' + startdate + '&ensemble=all&return_format=csv',
+                        self.cs_api_source) + '/api/ForecastEnsembles/?reach_id=' + comid + '&date=' + startdate + '&ensemble=all&return_format=csv',
                     verify=False).content
 
             else:
                 res = requests.get(
-                    active_app.get_custom_setting('api_source') + '/api/ForecastStats/?reach_id=' + comid + '&return_format=csv',
+                    active_app.get_custom_setting(self.cs_api_source) + '/api/ForecastStats/?reach_id=' + comid + '&return_format=csv',
                     verify=False).content
 
                 ens = requests.get(
                     active_app.get_custom_setting(
-                        'api_source') + '/api/ForecastEnsembles/?reach_id=' + comid + '&ensemble=all&return_format=csv',
+                        self.cs_api_source) + '/api/ForecastEnsembles/?reach_id=' + comid + '&ensemble=all&return_format=csv',
                     verify=False).content
 
             stats_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
@@ -478,7 +503,7 @@ class Ecmf:
 
             '''Getting Return Periods'''
             res = requests.get(
-                active_app.get_custom_setting('api_source') + '/api/ReturnPeriods/?reach_id=' + comid + '&return_format=csv',
+                active_app.get_custom_setting(self.cs_api_source) + '/api/ReturnPeriods/?reach_id=' + comid + '&return_format=csv',
                 verify=False).content
             rperiods_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
 
@@ -494,7 +519,7 @@ class Ecmf:
         active_app = get_active_app(request, get_class=True)
 
         # peru_id_path = os.path.join(app_workspace.path, 'peru_reachids.csv')
-        reach_id_paths = active_app.get_custom_setting('reach_ids')
+        reach_id_paths = active_app.get_custom_setting(self.cs_reach_ids)
 
         reach_pds = pd.read_csv(reach_id_paths)
         reach_ids_list = reach_pds['COMID'].tolist()
@@ -505,7 +530,7 @@ class Ecmf:
                 watershed = get_data['watershed']
                 subbasin = get_data['subbasin']
 
-                res = requests.get(active_app.get_custom_setting('api_source') + '/api/ForecastWarnings/?region=' + watershed + '-' + 'geoglows' + '&return_format=csv', verify=False).content
+                res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/ForecastWarnings/?region=' + watershed + '-' + 'geoglows' + '&return_format=csv', verify=False).content
 
                 res_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
                 cols = ['date_exceeds_return_period_2', 'date_exceeds_return_period_5', 'date_exceeds_return_period_10', 'date_exceeds_return_period_25', 'date_exceeds_return_period_50', 'date_exceeds_return_period_100']
@@ -592,8 +617,8 @@ class Ecmf:
 
         # Check if we need to hide the WS options dropdown.
         hiddenAttr = ""
-        if app.get_custom_setting('show_dropdown') and app.get_custom_setting('default_model_type') and app.get_custom_setting('default_watershed_name'):
-            hiddenAttr = "hidden"
+        # if app.get_custom_setting('show_dropdown') and app.get_custom_setting('default_model_type') and app.get_custom_setting('default_watershed_name'):
+        #     hiddenAttr = "hidden"
 
         init_model_val = request.GET.get('model', False) or app.get_custom_setting('default_model_type') or 'Select Model'
         init_ws_val = app.get_custom_setting('default_watershed_name') or 'Select Watershed'
@@ -604,7 +629,7 @@ class Ecmf:
                                 options=[('Select Model', ''), ('ECMWF-RAPID', 'ecmwf'),
                                         ('LIS-RAPID', 'lis'), ('HIWAT-RAPID', 'hiwat')],
                                 initial=[init_model_val],
-                                classes=hiddenAttr,
+                                classes="hidden",
                                 original=True)
 
         # uncomment for displaying watersheds in the SPT
@@ -622,38 +647,42 @@ class Ecmf:
         geoserver_engine = app.get_spatial_dataset_service(
             name='main_geoserver', as_engine=True)
 
-        geos_username = geoserver_engine.username
-        geos_password = geoserver_engine.password
+
         my_geoserver = geoserver_engine.endpoint.replace('rest', '')
+        # geos_username = geoserver_engine.username
+        # geos_password = geoserver_engine.password
+        # watershed_list = [['Select Watershed', '']]  # + watershed_list
 
-        watershed_list = [['Select Watershed', '']]  # + watershed_list
+        # res2 = requests.get(my_geoserver + '/rest/workspaces/' + app.get_custom_setting('workspace') +
+        #                     '/featuretypes.json', auth=HTTPBasicAuth(geos_username, geos_password), verify=False)
+        # print(app.get_custom_setting('keywords'))
+        # for i in range(len(json.loads(res2.content)['featureTypes']['featureType'])):
+        #     raw_feature = json.loads(res2.content)['featureTypes']['featureType'][i]['name']
+        #     print("X",raw_feature)
+        #     if 'drainage_line' in raw_feature and any(n in raw_feature for n in app.get_custom_setting('keywords').replace(' ', '').split(',')):
+        #         feat_name = raw_feature.split('-')[0].replace('_', ' ').title() + ' (' + \
+        #             raw_feature.split('-')[1].replace('_', ' ').title() + ')'
+        #         print(("x"),feat_name)
+                
+        #         if feat_name not in str(watershed_list):
+        #             watershed_list.append([feat_name, feat_name])
 
-        res2 = requests.get(my_geoserver + '/rest/workspaces/' + app.get_custom_setting('workspace') +
-                            '/featuretypes.json', auth=HTTPBasicAuth(geos_username, geos_password), verify=False)
+        # # Add the default WS if present and not already in the list
+        # if init_ws_val and init_ws_val not in str(watershed_list):
+        #     watershed_list.append([init_ws_val, init_ws_val])
+        # print("list",watershed_list)
 
-        for i in range(len(json.loads(res2.content)['featureTypes']['featureType'])):
-            raw_feature = json.loads(res2.content)['featureTypes']['featureType'][i]['name']
-            if 'drainage_line' in raw_feature and any(n in raw_feature for n in app.get_custom_setting('keywords').replace(' ', '').split(',')):
-                feat_name = raw_feature.split('-')[0].replace('_', ' ').title() + ' (' + \
-                    raw_feature.split('-')[1].replace('_', ' ').title() + ')'
-                if feat_name not in str(watershed_list):
-                    watershed_list.append([feat_name, feat_name])
-
-        # Add the default WS if present and not already in the list
-        if init_ws_val and init_ws_val not in str(watershed_list):
-            watershed_list.append([init_ws_val, init_ws_val])
-
-        watershed_select = SelectInput(display_text='',
-                                    name='watershed',
-                                    options=watershed_list,
-                                    initial=[init_ws_val],
-                                    original=True,
-                                    classes=hiddenAttr,
-                                    attributes={'onchange': "javascript:view_watershed();"+hiddenAttr}
-                                    )
+        # watershed_select = SelectInput(display_text='',
+        #                             name='watershed',
+        #                             options=watershed_list,
+        #                             initial=[init_ws_val],
+        #                             original=True,
+        #                             classes=hiddenAttr,
+        #                             attributes={'onchange': "javascript:view_watershed();"+hiddenAttr}
+        #                             )
 
         zoom_info = TextInput(display_text='',
-                            initial=json.dumps(app.get_custom_setting('zoom_info')),
+                            initial=json.dumps(app.get_custom_setting(self.cs_zoom_info)),
                             name='zoom_info',
                             disabled=True)
 
@@ -664,8 +693,8 @@ class Ecmf:
         my_geoserver = geoserver_engine.endpoint.replace('rest', '')
 
         geoserver_base_url = my_geoserver
-        geoserver_workspace = app.get_custom_setting('workspace')
-        region = app.get_custom_setting('region')
+        geoserver_workspace = app.get_custom_setting(self.cs_workspace)
+        region = app.get_custom_setting(self.cs_region)
         geoserver_endpoint = TextInput(display_text='',
                                     initial=json.dumps([geoserver_base_url, geoserver_workspace, region]),
                                     name='geoserver_endpoint',
@@ -730,7 +759,8 @@ class Ecmf:
                                 today_button=True,
                                 initial='')
 
-        region_index = json.load(open(os.path.join(app.get_custom_setting('static_GeoJSON_path'), 'index.json')))
+        region_index = json.load(open(os.path.join(app.get_custom_setting(self.cs_geojson_path), 'index.json')))
+
         regions = SelectInput(
             display_text='Zoom to a Region:',
             name='regions',
@@ -738,11 +768,11 @@ class Ecmf:
             original=True,
             options=[(region_index[opt]['name'], opt) for opt in region_index]
         )
-
+        print(app.get_custom_setting(self.cs_streams_layer))
         context = {
             "base_name": base_name,
             "model_input": model_input,
-            "watershed_select": watershed_select,
+            # "watershed_select": watershed_select,
             "zoom_info": zoom_info,
             "geoserver_endpoint": geoserver_endpoint,
             "defaultUpdateButton": defaultUpdateButton,
@@ -750,7 +780,9 @@ class Ecmf:
             "enddateobs": enddateobs,
             "date_picker": date_picker,
             "regions": regions,
-            "path_geojson": app.get_custom_setting('static_GeoJSON_path')
+            "regions_json": json.dumps(region_index, ensure_ascii=False) ,
+            "path_geojson": app.get_custom_setting(self.cs_geojson_path),
+            "streams_layer": app.get_custom_setting(self.cs_streams_layer)
         }
 
         # return render(request, '{0}/ecmwf.html'.format(base_name), context)

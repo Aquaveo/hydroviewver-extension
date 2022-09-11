@@ -1,12 +1,13 @@
 function init_map() {
 
-    wms_layers = [
-        AccRainEGE_layer,
-        EGE_probRgt50_layer,
-        EGE_probRgt150_layer,
-        EGE_probRgt300_layer
-    ];
-
+    // wms_layers = [
+    //     AccRainEGE_layer,
+    //     EGE_probRgt50_layer,
+    //     EGE_probRgt150_layer,
+    //     EGE_probRgt300_layer
+    // ];
+    console.log("here")
+    wms_layers = []
 
     if ($('#model option:selected').text() === 'ECMWF-RAPID') {
         var wmsLayer = new ol.layer.Image({
@@ -46,39 +47,42 @@ function view_watershed() {
     map.removeInteraction(select_interaction);
     map.removeLayer(wmsLayer);
     $("#get-started").modal('hide');
-    if ($('#model option:selected').text() === 'ECMWF-RAPID' && $('#watershedSelect option:selected').val() !== "") {
-
+    console.log($('#model option:selected').text());
+    if ($('#model option:selected').text() === 'ECMWF-RAPID' ) {
+        console.log("nodel ecmwf")
         $("#watershed-info").empty();
 
         $('#dates').addClass('hidden');
 
         var workspace = JSON.parse($('#geoserver_endpoint').val())[1];
         var model = $('#model option:selected').text();
-        var watershed = $('#watershedSelect option:selected').text().split(' (')[0].replace(' ', '_').toLowerCase();
-        var subbasin = $('#watershedSelect option:selected').text().split(' (')[1].replace(')', '').toLowerCase();
-        var watershed_display_name = $('#watershedSelect option:selected').text().split(' (')[0];
-        var subbasin_display_name = $('#watershedSelect option:selected').text().split(' (')[1].replace(')', '');
-        $("#watershed-info").append('<h3>Current Watershed: ' + watershed_display_name + '</h3><h5>Subbasin Name: ' + subbasin_display_name);
+        // var watershed = $('#watershedSelect option:selected').text().split(' (')[0].replace(' ', '_').toLowerCase();
+        // var subbasin = $('#watershedSelect option:selected').text().split(' (')[1].replace(')', '').toLowerCase();
+        // var watershed_display_name = $('#watershedSelect option:selected').text().split(' (')[0];
+        // var subbasin_display_name = $('#watershedSelect option:selected').text().split(' (')[1].replace(')', '');
+        // $("#watershed-info").append('<h3>Current Watershed: ' + watershed_display_name + '</h3><h5>Subbasin Name: ' + subbasin_display_name);
 
         var layerName = workspace + ':' + watershed + '-' + subbasin + '-geoglows-drainage_line';
-
         
-        var sld_string = create_style(layerName,properties);
-        console.log(sld_string)
+        
+        // var sld_string = create_style(layerName,properties);
+        // console.log(sld_string)
         wmsLayer = streams_wms;
         feature_layer = wmsLayer;
 
 
         get_warning_points(model, watershed, subbasin);
 
-        wmsLayer2 = stations_wms;
+        // wmsLayer2 = stations_wms;
+        wmsLayer2 = streams_wms;
+
         feature_layer2 = wmsLayer2;
 
         map.addLayer(wmsLayer);
         map.addLayer(wmsLayer2);
         $loading.addClass('hidden');
-        //var ajax_url = JSON.parse($('#geoserver_endpoint').val())[0].replace(/\/$/, "") + '/' + workspace + '/' + watershed + '-' + subbasin + '-drainage_line/wfs?request=GetCapabilities';
-        var ajax_url = 'https://geoserver.hydroshare.org/geoserver/wfs?request=GetCapabilities';
+        var ajax_url = JSON.parse($('#geoserver_endpoint').val())[0].replace(/\/$/, "") + '/' + workspace + '/' + watershed + '-' + subbasin + '-drainage_line/wfs?request=GetCapabilities';
+        // var ajax_url = 'https://geoserver.hydroshare.org/geoserver/wfs?request=GetCapabilities';
 
         var capabilities = $.ajax(ajax_url, {
             type: 'GET',
@@ -599,7 +603,7 @@ function add_feature(model, workspace, comid) {
 }
 
 function getRegionGeoJsons() {
-
+    
     let geojsons = region_index[$("#regions").val()]['geojsons'];
     for (let i in geojsons) {
         var regionsSource = new ol.source.Vector({

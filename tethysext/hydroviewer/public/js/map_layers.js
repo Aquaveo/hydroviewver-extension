@@ -77,11 +77,11 @@ hundred_year_warning = new ol.layer.Vector({
     source: new ol.source.Vector(),
     style: hundred_year_warning_style
 });
-
+console.log("mylayer")
 var stations_wms = new ol.layer.Image({
     source: new ol.source.ImageWMS({
-        // url: JSON.parse($('#geoserver_endpoint').val())[0].replace(/\/$/, "")+'/wms',
-        url: 'https://geoserver.hydroshare.org/geoserver/HS-9b6a7f2197ec403895bacebdca4d0074/wms',
+        url: JSON.parse($('#geoserver_endpoint').val())[0].replace(/\/$/, "")+'/wms'+ '?service=WMS&version=1.1.1&request=GetCapabilities&',
+        // url: 'https://geoserver.hydroshare.org/geoserver/HS-9b6a7f2197ec403895bacebdca4d0074/wms',
         params: {'LAYERS':"SENAMHI_Stations_RT_v3"},
         serverType: 'geoserver',
         crossOrigin: 'Anonymous'
@@ -89,46 +89,51 @@ var stations_wms = new ol.layer.Image({
     opacity: 0.7
 });
 
-
+console.log($('#geoserver_endpoint').val())
 var workspace = JSON.parse($('#geoserver_endpoint').val())[1];
 var model = $('#model option:selected').text();
-var watershed = $('#watershedSelect option:selected').text().split(' (')[0].replace(' ', '_').toLowerCase();
-var subbasin = $('#watershedSelect option:selected').text().split(' (')[1].replace(')', '').toLowerCase();
+// var watershed = $('#watershedSelect option:selected').text().split(' (')[0].replace(' ', '_').toLowerCase();
+// var subbasin = $('#watershedSelect option:selected').text().split(' (')[1].replace(')', '').toLowerCase();
 
-var layerName = workspace + ':' + watershed + '-' + subbasin + '-geoglows-drainage_line';
+// var layerName = workspace + ':' + watershed + '-' + subbasin + '-geoglows-drainage_line';
+var layerName = workspace + ':' + streams_layer_name;
+// console.log(layerName)
+// console.log(workspace,watershed,subbasin)
 
         
 
-var properties = [
-    {
-        'names': 'region',
-        'val': 'Amazon_River',
-        'stroke_color': '#009933',
-        'stroke_width': '2'
-    },
-    {
-        'names': 'region',
-        'val': 'Northwest_Coast',
-        'stroke_color': '#0055CC',
-        'stroke_width': '2'
-    },
-    {
-        'names': 'region',
-        'val': 'Dulce_River_Altiplano',
-        'stroke_color': '#FF0000',
-        'stroke_width': '2'
-    }
+// var properties = [
+//     {
+//         'names': 'region',
+//         'val': 'Amazon_River',
+//         'stroke_color': '#009933',
+//         'stroke_width': '2'
+//     },
+//     {
+//         'names': 'region',
+//         'val': 'Northwest_Coast',
+//         'stroke_color': '#0055CC',
+//         'stroke_width': '2'
+//     },
+//     {
+//         'names': 'region',
+//         'val': 'Dulce_River_Altiplano',
+//         'stroke_color': '#FF0000',
+//         'stroke_width': '2'
+//     }
     
-]
+// ]
 
-var sld_string = create_style(layerName,properties);
-console.log(sld_string)
+// var sld_string = create_style(layerName,properties);
+// console.log(sld_string)
 
 var streams_wms = new ol.layer.Image({
     source: new ol.source.ImageWMS({
         url: JSON.parse($('#geoserver_endpoint').val())[0].replace(/\/$/, "") + '/wms'+ '?service=WMS&version=1.1.1&request=GetCapabilities&',
         // url: 'https://tethys2.byu.edu/geoserver/peru_hydroviewer/wms'+ '?service=WMS&version=1.1.1&request=GetCapabilities&',
-        params: { 'LAYERS': layerName, 'SLD_BODY': sld_string },
+        // params: { 'LAYERS': layerName, 'SLD_BODY': sld_string },
+        params: { 'LAYERS': layerName },
+
 
         serverType: 'geoserver',
         crossOrigin: 'Anonymous'
