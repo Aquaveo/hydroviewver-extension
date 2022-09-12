@@ -26,4 +26,5 @@ var $loading = $('#view-file-loading');
 var m_downloaded_historical_streamflow = false;
 var m_downloaded_flow_duration = false;
 
-const glofasURL = `http://globalfloods-ows.ecmwf.int/glofas-ows/ows.py`
+const glofasURL = `http://globalfloods-ows.ecmwf.int/glofas-ows`
+// http://globalfloods-ows.ecmwf.int/glofas-ows/?service=WMS&request=GetCapabilities

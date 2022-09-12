@@ -2,7 +2,7 @@ var base_layer = new ol.layer.Tile({
     source: new ol.source.BingMaps({
         key: 'eLVu8tDRPeQqmBlKAjcw~82nOqZJe2EpKmqd-kQrSmg~AocUZ43djJ-hMBHQdYDyMbT-Enfsk0mtUIGws1WeDuOvjY4EXCH-9OK3edNLDgkc',
         imagerySet: 'Road'
-        //imagerySet: 'AerialWithLabels'
+        // imagerySet: 'AerialWithLabels'
     })
 });
 
@@ -77,26 +77,25 @@ hundred_year_warning = new ol.layer.Vector({
     source: new ol.source.Vector(),
     style: hundred_year_warning_style
 });
-console.log("mylayer")
+
 var stations_wms = new ol.layer.Image({
     source: new ol.source.ImageWMS({
-        url: JSON.parse($('#geoserver_endpoint').val())[0].replace(/\/$/, "")+'/wms'+ '?service=WMS&version=1.1.1&request=GetCapabilities&',
-        // url: 'https://geoserver.hydroshare.org/geoserver/HS-9b6a7f2197ec403895bacebdca4d0074/wms',
-        params: {'LAYERS':"SENAMHI_Stations_RT_v3"},
+        url: geoserver_endpoint.replace(/\/$/, "")+'/wms'+ '?service=WMS&version=1.1.1&request=GetCapabilities&',
+        params: {'LAYERS':stations_layer},
         serverType: 'geoserver',
         crossOrigin: 'Anonymous'
     }),
     opacity: 0.7
 });
 
-console.log($('#geoserver_endpoint').val())
-var workspace = JSON.parse($('#geoserver_endpoint').val())[1];
-var model = $('#model option:selected').text();
+// console.log($('#geoserver_endpoint').val())
+// var workspace = geoserver_workspace;
+// var model = $('#model option:selected').text();
 // var watershed = $('#watershedSelect option:selected').text().split(' (')[0].replace(' ', '_').toLowerCase();
 // var subbasin = $('#watershedSelect option:selected').text().split(' (')[1].replace(')', '').toLowerCase();
 
 // var layerName = workspace + ':' + watershed + '-' + subbasin + '-geoglows-drainage_line';
-var layerName = workspace + ':' + streams_layer_name;
+var layerName = geoserver_workspace + ':' + streams_layer_name;
 // console.log(layerName)
 // console.log(workspace,watershed,subbasin)
 
@@ -129,15 +128,13 @@ var layerName = workspace + ':' + streams_layer_name;
 
 var streams_wms = new ol.layer.Image({
     source: new ol.source.ImageWMS({
-        url: JSON.parse($('#geoserver_endpoint').val())[0].replace(/\/$/, "") + '/wms'+ '?service=WMS&version=1.1.1&request=GetCapabilities&',
+        url: geoserver_endpoint.replace(/\/$/, "") + '/wms'+ '?service=WMS&version=1.1.1&request=GetCapabilities&',
         // url: 'https://tethys2.byu.edu/geoserver/peru_hydroviewer/wms'+ '?service=WMS&version=1.1.1&request=GetCapabilities&',
         // params: { 'LAYERS': layerName, 'SLD_BODY': sld_string },
         params: { 'LAYERS': layerName },
-
-
         serverType: 'geoserver',
         crossOrigin: 'Anonymous'
     }),
     opacity: 0.4
 });
-        // wmsLayer.getSource().updateParams({'STYLES': undefined, 'SLD_BODY': sld_string});
+// wmsLayer.getSource().updateParams({'STYLES': undefined, 'SLD_BODY': sld_string});

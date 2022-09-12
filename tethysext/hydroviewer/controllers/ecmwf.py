@@ -1,28 +1,22 @@
 
-import os
-from tethys_apps.utilities import get_active_app
-
-from django.http import HttpResponse, JsonResponse
-from tethys_sdk.permissions import has_permission
-
-
-from django.shortcuts import render
-from tethys_sdk.gizmos import *
-from tethys_sdk.gizmos import PlotlyView, Button,DatePicker, SelectInput
-
-import numpy as np
-
-import requests
-import json
-import pandas as pd
+import datetime as dt
 import io
+import json
+import os
+
 import geoglows
 import hydrostats
-
-import datetime as dt
+import numpy as np
+import pandas as pd
 import plotly.graph_objs as go
+import requests
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
 from requests.auth import HTTPBasicAuth
-
+from tethys_apps.utilities import get_active_app
+from tethys_sdk.gizmos import *
+from tethys_sdk.gizmos import Button, DatePicker, PlotlyView, SelectInput
+from tethys_sdk.permissions import has_permission
 
 base_name = 'hydroviewer'
 
@@ -39,7 +33,7 @@ class Ecmf:
     cs_region='region'
     cs_geojson_path='static_GeoJSON_path'
     cs_keywords='keywords'
-
+    cs_default_watershed_name='default_watershed_name'
     # # parameterized constructor
     # def __init__(self, cs_streams_layer, cs_stations_layer,cs_api_source,cs_reach_ids,cs_zoom_info,cs_workspace,cs_region,cs_geojson_path,cs_keywords):
     #     self.cs_streams_layer = cs_streams_layer
@@ -75,6 +69,7 @@ class Ecmf:
             visible=visible,
             line=dict(color=color, width=0))
 
+    
     def ecmwf_get_time_series(self,request):
         # app_namespace = active_app.namespace
         active_app = get_active_app(request, get_class=True)
@@ -185,7 +180,30 @@ class Ecmf:
         except Exception as e:
             print(str(e))
             return JsonResponse({'error': 'No data found for the selected reach.'})
+    @staticmethod
+    def _get_available_dates(api_source,watershed,subbasin):
+        res = requests.get(
+            api_source + '/api/AvailableDates/?region=' + watershed + '-' + subbasin,
+            verify=False)        
+        data = res.json()
+        dates_array = (data.get('available_dates'))
 
+        dates = []
+
+        for date in dates_array:
+            if len(date) == 10:
+                date_mod = date + '000'
+                date_f = dt.datetime.strptime(date_mod, '%Y%m%d.%H%M').strftime('%Y-%m-%d %H:%M')
+            else:
+                date_f = dt.datetime.strptime(date, '%Y%m%d.%H%M').strftime('%Y-%m-%d')
+                date = date[:-3]
+            dates.append([date_f, date])
+            dates = sorted(dates)
+
+        dates.append(['Select Date', dates[-1][1]])
+        
+        return dates.reverse()
+            
     def get_available_dates(self,request):
         get_data = request.GET
         active_app = get_active_app(request, get_class=True)
@@ -599,49 +617,11 @@ class Ecmf:
     def home(self,request):
 
         # Can Set Default permissions : Only allowed for admin users
-        can_update_default = has_permission(request, 'update_default')
         app = get_active_app(request, get_class=True)
-        print(app)
-        if(can_update_default):
-            defaultUpdateButton = Button(
-                display_text='Save',
-                name='update_button',
-                style='success',
-                attributes={
-                    'data-toggle': 'tooltip',
-                    'data-placement': 'bottom',
-                    'title': 'Save as Default Options for WS'
-                })
-        else:
-            defaultUpdateButton = False
+
 
         # Check if we need to hide the WS options dropdown.
-        hiddenAttr = ""
-        # if app.get_custom_setting('show_dropdown') and app.get_custom_setting('default_model_type') and app.get_custom_setting('default_watershed_name'):
-        #     hiddenAttr = "hidden"
 
-        init_model_val = request.GET.get('model', False) or app.get_custom_setting('default_model_type') or 'Select Model'
-        init_ws_val = app.get_custom_setting('default_watershed_name') or 'Select Watershed'
-
-        model_input = SelectInput(display_text='',
-                                name='model',
-                                multiple=False,
-                                options=[('Select Model', ''), ('ECMWF-RAPID', 'ecmwf'),
-                                        ('LIS-RAPID', 'lis'), ('HIWAT-RAPID', 'hiwat')],
-                                initial=[init_model_val],
-                                classes="hidden",
-                                original=True)
-
-        # uncomment for displaying watersheds in the SPT
-        # res = requests.get(app.get_custom_setting('api_source') + '/apps/streamflow-prediction-tool/api/GetWatersheds/',
-        #                    headers={'Authorization': 'Token ' + app.get_custom_setting('spt_token')})
-        #
-        # watershed_list_raw = json.loads(res.content)
-        #
-        # app.get_custom_setting('keywords').lower().replace(' ', '').split(',')
-        # watershed_list = [value for value in watershed_list_raw if
-        #                   any(val in value[0].lower().replace(' ', '') for
-        #                       val in app.get_custom_setting('keywords').lower().replace(' ', '').split(','))]
 
         # Retrieve a geoserver engine and geoserver credentials.
         geoserver_engine = app.get_spatial_dataset_service(
@@ -681,10 +661,10 @@ class Ecmf:
         #                             attributes={'onchange': "javascript:view_watershed();"+hiddenAttr}
         #                             )
 
-        zoom_info = TextInput(display_text='',
-                            initial=json.dumps(app.get_custom_setting(self.cs_zoom_info)),
-                            name='zoom_info',
-                            disabled=True)
+        # zoom_info = TextInput(display_text='',
+        #                     initial=json.dumps(app.get_custom_setting(self.cs_zoom_info)),
+        #                     name='zoom_info',
+        #                     disabled=True)
 
         # Retrieve a geoserver engine and geoserver credentials.
         geoserver_engine = app.get_spatial_dataset_service(
@@ -695,58 +675,16 @@ class Ecmf:
         geoserver_base_url = my_geoserver
         geoserver_workspace = app.get_custom_setting(self.cs_workspace)
         region = app.get_custom_setting(self.cs_region)
-        geoserver_endpoint = TextInput(display_text='',
-                                    initial=json.dumps([geoserver_base_url, geoserver_workspace, region]),
-                                    name='geoserver_endpoint',
-                                    disabled=True)
+        # print(type(geoserver_base_url),geoserver_workspace,region)
+        # geoserver_endpoint = TextInput(display_text='',
+        #                             initial=json.dumps([geoserver_base_url, geoserver_workspace, region]),
+        #                             name='geoserver_endpoint',
+        #                             disabled=True)
 
-        today = dt.datetime.now()
-        year = str(today.year)
-        month = str(today.strftime("%m"))
-        day = str(today.strftime("%d"))
-        date = day + '/' + month + '/' + year
-        lastyear = int(year) - 1
-        date2 = day + '/' + month + '/' + str(lastyear)
-
-        startdateobs = DatePicker(name='startdateobs',
-                                display_text='Start Date',
-                                autoclose=True,
-                                format='dd/mm/yyyy',
-                                start_date='01/01/1950',
-                                start_view='month',
-                                today_button=True,
-                                initial=date2,
-                                classes='datepicker')
-
-        enddateobs = DatePicker(name='enddateobs',
-                                display_text='End Date',
-                                autoclose=True,
-                                format='dd/mm/yyyy',
-                                start_date='01/01/1950',
-                                start_view='month',
-                                today_button=True,
-                                initial=date,
-                                classes='datepicker')
-
-        res = requests.get('https://geoglows.ecmwf.int/api/AvailableDates/?region=central_america-geoglows', verify=False)
-        data = res.json()
-        dates_array = (data.get('available_dates'))
-
-        dates = []
-
-        for date in dates_array:
-            if len(date) == 10:
-                date_mod = date + '000'
-                date_f = dt.datetime.strptime(date_mod, '%Y%m%d.%H%M').strftime('%Y-%m-%d %H:%M')
-            else:
-                date_f = dt.datetime.strptime(date, '%Y%m%d.%H%M').strftime('%Y-%m-%d')
-                date = date[:-3]
-            dates.append([date_f, date])
-            dates = sorted(dates)
-
-        dates.append(['Select Date', dates[-1][1]])
-        # print(dates)
-        dates.reverse()
+        api_base_endpoint = app.get_custom_setting(self.api_source)
+        watershed = app.get_custom_setting(self.cs_default_watershed_name).split(' (')[0].replace(' ', '_').lowe();
+        subasin = app.get_custom_setting(self.cs_default_watershed_name).split(' (')[1].replace(')', '').lower();
+        dates = self._get_available_dates(api_base_endpoint,watershed,subasin)
 
         # Date Picker Options
         date_picker = DatePicker(name='datesSelect',
@@ -771,19 +709,28 @@ class Ecmf:
         print(app.get_custom_setting(self.cs_streams_layer))
         context = {
             "base_name": base_name,
-            "model_input": model_input,
+            "default_watershed_name": app.get_custom_setting(self.cs_default_watershed_name),
+            "default_subasin_name":subasin,
+            "geoserver_url": geoserver_base_url,
+            "geoserver_workspace":geoserver_workspace,
+            "geoserver_region": region,
+            # "model_input": model_input,
             # "watershed_select": watershed_select,
-            "zoom_info": zoom_info,
-            "geoserver_endpoint": geoserver_endpoint,
-            "defaultUpdateButton": defaultUpdateButton,
-            "startdateobs": startdateobs,
-            "enddateobs": enddateobs,
+            # "zoom_info": zoom_info,
+            # "geoserver_endpoint": geoserver_endpoint,
+
+            # "defaultUpdateButton": defaultUpdateButton,
+            # "startdateobs": startdateobs,
+            # "enddateobs": enddateobs,
             "date_picker": date_picker,
             "regions": regions,
-            "regions_json": json.dumps(region_index, ensure_ascii=False) ,
+            # "regions_json": json.dumps(region_index, ensure_ascii=False) ,
             "path_geojson": app.get_custom_setting(self.cs_geojson_path),
-            "streams_layer": app.get_custom_setting(self.cs_streams_layer)
+            "streams_layer": app.get_custom_setting(self.cs_streams_layer),
+            "stations_layer": app.get_custom_setting(self.cs_stations_layer)
         }
-
+        #  "path_geojson" and regions should be taken out,also the date pickers should be done in the app not here, here also the json
+        #   this is thought, so people can use the JS and not rely only in gizmos if they desire to do more customizations.
+        
         # return render(request, '{0}/ecmwf.html'.format(base_name), context)
         return context

@@ -34,8 +34,15 @@
 {% block scripts %}
 {{ block.super }}
 <script>
+    var geoserver_endpoint = "{{ geoserver_url|safe }}"
+    var geoserver_workspace = "{{ geoserver_workspace|safe }}"
+    var geoserver_region = "{{ geoserver_region|safe }}"
+
+    var default_watershed_name = "{{ default_watershed_name|safe }}"
+    
     var streams_layer_name = "{{ streams_layer|safe }}"
-    console.log(streams_layer_name)
+    var stations_layer = "{{ stations_layer|safe }}"
+    
 
     var staticGeoJSON = "{{ path_geojson|safe }}";
 
