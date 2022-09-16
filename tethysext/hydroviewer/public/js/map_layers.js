@@ -68,10 +68,6 @@ var Layers = function(){
         opacity: 0.7
     });
 
-
-
-
-
     var two_year_warning = new ol.layer.Vector({
         source: new ol.source.Vector(),
         style: this.styles.get_two_year_warning_style()
@@ -168,8 +164,34 @@ var Layers = function(){
         ]
     }
 
+    this.toggle_visibility_streams = function(isVisible){
+        streams_wms.setVisible(isVisible)
+    }
+
+    this.toggle_visibility_stations = function(isVisible){
+        stations_wms.setVisible(isVisible)
+    }
     
+    this.toggle_visibility_hundred_year_warning = function(isVisible){
+        hundred_year_warning.setVisible(isVisible)
+    }
+    this.toggle_visibility_fifty_year_warning = function(isVisible){
+        fifty_year_warning.setVisible(isVisible)
+    }
+    this.toggle_visibility_twenty_five_year_warning = function(isVisible){
+        twenty_five_year_warning.setVisible(isVisible)
+    }
+    this.toggle_visibility_ten_year_warning = function(isVisible){
+        ten_year_warning.setVisible(isVisible)
+    }
 
+    this.toggle_visibility_five_year_warning = function(isVisible){
+        five_year_warning.setVisible(isVisible)
+    }
 
+    this.toggle_visibility_two_year_warning = function(isVisible){
+        two_year_warning.setVisible(isVisible)
+    }
+    
 };
 
