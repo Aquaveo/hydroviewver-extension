@@ -31,9 +31,10 @@ class Ecmf:
     cs_zoom_info='zoom_info'
     cs_workspace='workspace'
     cs_region='region'
-    cs_geojson_path='static_GeoJSON_path'
+    # cs_geojson_path='static_GeoJSON_path'
     cs_keywords='keywords'
     cs_default_watershed_name='default_watershed_name'
+    # cd_default_model_type = 'default_model_type'
     # # parameterized constructor
     # def __init__(self, cs_streams_layer, cs_stations_layer,cs_api_source,cs_reach_ids,cs_zoom_info,cs_workspace,cs_region,cs_geojson_path,cs_keywords):
     #     self.cs_streams_layer = cs_streams_layer
@@ -180,12 +181,18 @@ class Ecmf:
         except Exception as e:
             print(str(e))
             return JsonResponse({'error': 'No data found for the selected reach.'})
-    @staticmethod
-    def _get_available_dates(api_source,watershed,subbasin):
+    
+    def get_available_dates_watershed(self,request):
+        app = get_active_app(request, get_class=True)
+        api_base_endpoint = app.get_custom_setting(self.cs_api_source)
+        watershed = app.get_custom_setting(self.cs_default_watershed_name).split(' (')[0].replace(' ', '_').lower();
+
+        # print(api_base_endpoint,watershed,subbasin)
         res = requests.get(
-            api_source + '/api/AvailableDates/?region=' + watershed + '-' + subbasin,
+            api_base_endpoint + '/api/AvailableDates/?region=' + watershed + '-' + 'geoglows',
             verify=False)        
         data = res.json()
+        # print(data)
         dates_array = (data.get('available_dates'))
 
         dates = []
@@ -201,8 +208,9 @@ class Ecmf:
             dates = sorted(dates)
 
         dates.append(['Select Date', dates[-1][1]])
-        
-        return dates.reverse()
+        # print(dates)
+        return dates
+        # return dates.reverse()
             
     def get_available_dates(self,request):
         get_data = request.GET
@@ -614,7 +622,7 @@ class Ecmf:
         else:
             pass
 
-    def home(self,request):
+    def get_start_custom_settings(self,request):
 
         # Can Set Default permissions : Only allowed for admin users
         app = get_active_app(request, get_class=True)
@@ -681,56 +689,54 @@ class Ecmf:
         #                             name='geoserver_endpoint',
         #                             disabled=True)
 
-        api_base_endpoint = app.get_custom_setting(self.api_source)
-        watershed = app.get_custom_setting(self.cs_default_watershed_name).split(' (')[0].replace(' ', '_').lowe();
+
         subasin = app.get_custom_setting(self.cs_default_watershed_name).split(' (')[1].replace(')', '').lower();
-        dates = self._get_available_dates(api_base_endpoint,watershed,subasin)
+        # dates = self._get_available_dates(api_base_endpoint,watershed,subasin)
 
         # Date Picker Options
-        date_picker = DatePicker(name='datesSelect',
-                                display_text='Date',
-                                autoclose=True,
-                                format='yyyy-mm-dd',
-                                start_date=dates[-1][0],
-                                end_date=dates[1][0],
-                                start_view='month',
-                                today_button=True,
-                                initial='')
+        # date_picker = DatePicker(name='datesSelect',
+        #                         display_text='Date',
+        #                         autoclose=True,
+        #                         format='yyyy-mm-dd',
+        #                         start_date=dates[-1][0],
+        #                         end_date=dates[1][0],
+        #                         start_view='month',
+        #                         today_button=True,
+        #                         initial='')
 
-        region_index = json.load(open(os.path.join(app.get_custom_setting(self.cs_geojson_path), 'index.json')))
+        # region_index = json.load(open(os.path.join(app.get_custom_setting(self.cs_geojson_path), 'index.json')))
 
-        regions = SelectInput(
-            display_text='Zoom to a Region:',
-            name='regions',
-            multiple=False,
-            original=True,
-            options=[(region_index[opt]['name'], opt) for opt in region_index]
-        )
+        # regions = SelectInput(
+        #     display_text='Zoom to a Region:',
+        #     name='regions',
+        #     multiple=False,
+        #     original=True,
+        #     options=[(region_index[opt]['name'], opt) for opt in region_index]
+        # )
         print(app.get_custom_setting(self.cs_streams_layer))
-        context = {
+        pre_context = {
             "base_name": base_name,
             "default_watershed_name": app.get_custom_setting(self.cs_default_watershed_name),
             "default_subasin_name":subasin,
             "geoserver_url": geoserver_base_url,
             "geoserver_workspace":geoserver_workspace,
             "geoserver_region": region,
+            "streams_layer": app.get_custom_setting(self.cs_streams_layer),
+            "stations_layer": app.get_custom_setting(self.cs_stations_layer),
             # "model_input": model_input,
             # "watershed_select": watershed_select,
             # "zoom_info": zoom_info,
             # "geoserver_endpoint": geoserver_endpoint,
-
             # "defaultUpdateButton": defaultUpdateButton,
             # "startdateobs": startdateobs,
             # "enddateobs": enddateobs,
-            "date_picker": date_picker,
-            "regions": regions,
+            # "date_picker": date_picker,
+            # "regions": regions,
             # "regions_json": json.dumps(region_index, ensure_ascii=False) ,
-            "path_geojson": app.get_custom_setting(self.cs_geojson_path),
-            "streams_layer": app.get_custom_setting(self.cs_streams_layer),
-            "stations_layer": app.get_custom_setting(self.cs_stations_layer)
+            # "path_geojson": app.get_custom_setting(self.cs_geojson_path),
         }
         #  "path_geojson" and regions should be taken out,also the date pickers should be done in the app not here, here also the json
         #   this is thought, so people can use the JS and not rely only in gizmos if they desire to do more customizations.
         
         # return render(request, '{0}/ecmwf.html'.format(base_name), context)
-        return context
+        return pre_context

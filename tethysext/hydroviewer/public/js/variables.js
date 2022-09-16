@@ -18,7 +18,7 @@ var default_extent,
     twenty_five_year_warning,
     fifty_year_warning,
     hundred_year_warning,
-    map,
+    // map,
     feature_layer2,
     wms_layers;
 
@@ -26,5 +26,7 @@ var $loading = $('#view-file-loading');
 var m_downloaded_historical_streamflow = false;
 var m_downloaded_flow_duration = false;
 
-const glofasURL = `http://globalfloods-ows.ecmwf.int/glofas-ows`
+// const glofasURL = `http://globalfloods-ows.ecmwf.int/glofas-ows`
 // http://globalfloods-ows.ecmwf.int/glofas-ows/?service=WMS&request=GetCapabilities
+
+

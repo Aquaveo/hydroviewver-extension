@@ -33,25 +33,7 @@
 
 {% block scripts %}
 {{ block.super }}
-<script>
-    var geoserver_endpoint = "{{ geoserver_url|safe }}"
-    var geoserver_workspace = "{{ geoserver_workspace|safe }}"
-    var geoserver_region = "{{ geoserver_region|safe }}"
 
-    var default_watershed_name = "{{ default_watershed_name|safe }}"
-    
-    var streams_layer_name = "{{ streams_layer|safe }}"
-    var stations_layer = "{{ stations_layer|safe }}"
-    
-
-    var staticGeoJSON = "{{ path_geojson|safe }}";
-
-    //var region_index = "{{ regions_json|safe }}";
-    //console.log(region_index);
-    
-    //region_index = JSON.parse(region_index);
-    //console.log(region_index);
-</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/openlayers/3.20.1/ol.js" type="text/javascript"></script>
 <script src="https://code.highcharts.com/stock/highstock.js"></script>
 <script src="http://code.highcharts.com/highcharts-more.js"></script>
@@ -64,7 +46,7 @@
 <script src="{% static 'hydroviewer/js/map_layers.js' %}" type="text/javascript"></script>
 <script src="{% static 'hydroviewer/js/map.js' %}" type="text/javascript"></script>
 <script src="{% static 'hydroviewer/js/timeSeries.js' %}" type="text/javascript"></script>
-<script src="{% static 'hydroviewer/js/main.js' %}" type="text/javascript"></script>
+<!-- <script src="{% static 'hydroviewer/js/main.js' %}" type="text/javascript"></script> -->
 
 
 {% endblock %}
