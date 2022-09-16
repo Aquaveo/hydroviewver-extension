@@ -543,6 +543,7 @@ class Ecmf:
     def get_warning_points(self,request):
         get_data = request.GET
         active_app = get_active_app(request, get_class=True)
+        watershed = active_app.get_custom_setting(self.cs_default_watershed_name).split(' (')[0].replace(' ', '_').lower();
 
         # peru_id_path = os.path.join(app_workspace.path, 'peru_reachids.csv')
         reach_id_paths = active_app.get_custom_setting(self.cs_reach_ids)
@@ -550,75 +551,73 @@ class Ecmf:
         reach_pds = pd.read_csv(reach_id_paths)
         reach_ids_list = reach_pds['COMID'].tolist()
         return_obj = {}
+        try:
+            # watershed = get_data['watershed']
+            # subbasin = get_data['subbasin']
 
-        if get_data['model'] == 'ECMWF-RAPID':
-            try:
-                watershed = get_data['watershed']
-                subbasin = get_data['subbasin']
+            res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/ForecastWarnings/?region=' + watershed + '-' + 'geoglows' + '&return_format=csv', verify=False).content
 
-                res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/ForecastWarnings/?region=' + watershed + '-' + 'geoglows' + '&return_format=csv', verify=False).content
+            res_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
+            cols = ['date_exceeds_return_period_2', 'date_exceeds_return_period_5', 'date_exceeds_return_period_10', 'date_exceeds_return_period_25', 'date_exceeds_return_period_50', 'date_exceeds_return_period_100']
 
-                res_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
-                cols = ['date_exceeds_return_period_2', 'date_exceeds_return_period_5', 'date_exceeds_return_period_10', 'date_exceeds_return_period_25', 'date_exceeds_return_period_50', 'date_exceeds_return_period_100']
+            res_df["rp_all"] = res_df[cols].apply(lambda x: ','.join(x.replace(np.nan, '0')), axis=1)
 
-                res_df["rp_all"] = res_df[cols].apply(lambda x: ','.join(x.replace(np.nan, '0')), axis=1)
+            test_list = res_df["rp_all"].tolist()
 
-                test_list = res_df["rp_all"].tolist()
+            final_new_rp = []
+            for term in test_list:
+                new_rp = []
+                terms = term.split(',')
+                for te in terms:
+                    if te is not '0':
+                        # print('yeah')
+                        new_rp.append(1)
+                    else:
+                        new_rp.append(0)
+                final_new_rp.append(new_rp)
 
-                final_new_rp = []
-                for term in test_list:
-                    new_rp = []
-                    terms = term.split(',')
-                    for te in terms:
-                        if te is not '0':
-                            # print('yeah')
-                            new_rp.append(1)
-                        else:
-                            new_rp.append(0)
-                    final_new_rp.append(new_rp)
+            res_df['rp_all2'] = final_new_rp
 
-                res_df['rp_all2'] = final_new_rp
+            res_df = res_df.reset_index()
+            res_df = res_df[res_df['comid'].isin(reach_ids_list)]
 
-                res_df = res_df.reset_index()
-                res_df = res_df[res_df['comid'].isin(reach_ids_list)]
+            d = {'comid': res_df['comid'].tolist(), 'stream_order': res_df['stream_order'].tolist(), 'lat': res_df['stream_lat'].tolist(), 'lon': res_df['stream_lon'].tolist()}
+            df_final = pd.DataFrame(data=d)
 
-                d = {'comid': res_df['comid'].tolist(), 'stream_order': res_df['stream_order'].tolist(), 'lat': res_df['stream_lat'].tolist(), 'lon': res_df['stream_lon'].tolist()}
-                df_final = pd.DataFrame(data=d)
+            df_final[['rp_2', 'rp_5', 'rp_10', 'rp_25', 'rp_50', 'rp_100']] = pd.DataFrame(res_df.rp_all2.tolist(), index=df_final.index)
+            d2 = {'comid': res_df['comid'].tolist(), 'stream_order': res_df['stream_order'].tolist(), 'lat': res_df['stream_lat'].tolist(), 'lon': res_df['stream_lon'].tolist(), 'rp': df_final['rp_2']}
+            d5 = {'comid': res_df['comid'].tolist(), 'stream_order': res_df['stream_order'].tolist(), 'lat': res_df['stream_lat'].tolist(), 'lon': res_df['stream_lon'].tolist(), 'rp': df_final['rp_5']}
+            d10 = {'comid': res_df['comid'].tolist(), 'stream_order': res_df['stream_order'].tolist(), 'lat': res_df['stream_lat'].tolist(), 'lon': res_df['stream_lon'].tolist(), 'rp': df_final['rp_10']}
+            d25 = {'comid': res_df['comid'].tolist(), 'stream_order': res_df['stream_order'].tolist(), 'lat': res_df['stream_lat'].tolist(), 'lon': res_df['stream_lon'].tolist(), 'rp': df_final['rp_25']}
+            d50 = {'comid': res_df['comid'].tolist(), 'stream_order': res_df['stream_order'].tolist(), 'lat': res_df['stream_lat'].tolist(), 'lon': res_df['stream_lon'].tolist(), 'rp': df_final['rp_50']}
+            d100 = {'comid': res_df['comid'].tolist(), 'stream_order': res_df['stream_order'].tolist(), 'lat': res_df['stream_lat'].tolist(), 'lon': res_df['stream_lon'].tolist(), 'rp': df_final['rp_100']}
 
-                df_final[['rp_2', 'rp_5', 'rp_10', 'rp_25', 'rp_50', 'rp_100']] = pd.DataFrame(res_df.rp_all2.tolist(), index=df_final.index)
-                d2 = {'comid': res_df['comid'].tolist(), 'stream_order': res_df['stream_order'].tolist(), 'lat': res_df['stream_lat'].tolist(), 'lon': res_df['stream_lon'].tolist(), 'rp': df_final['rp_2']}
-                d5 = {'comid': res_df['comid'].tolist(), 'stream_order': res_df['stream_order'].tolist(), 'lat': res_df['stream_lat'].tolist(), 'lon': res_df['stream_lon'].tolist(), 'rp': df_final['rp_5']}
-                d10 = {'comid': res_df['comid'].tolist(), 'stream_order': res_df['stream_order'].tolist(), 'lat': res_df['stream_lat'].tolist(), 'lon': res_df['stream_lon'].tolist(), 'rp': df_final['rp_10']}
-                d25 = {'comid': res_df['comid'].tolist(), 'stream_order': res_df['stream_order'].tolist(), 'lat': res_df['stream_lat'].tolist(), 'lon': res_df['stream_lon'].tolist(), 'rp': df_final['rp_25']}
-                d50 = {'comid': res_df['comid'].tolist(), 'stream_order': res_df['stream_order'].tolist(), 'lat': res_df['stream_lat'].tolist(), 'lon': res_df['stream_lon'].tolist(), 'rp': df_final['rp_50']}
-                d100 = {'comid': res_df['comid'].tolist(), 'stream_order': res_df['stream_order'].tolist(), 'lat': res_df['stream_lat'].tolist(), 'lon': res_df['stream_lon'].tolist(), 'rp': df_final['rp_100']}
+            df_final_2 = pd.DataFrame(data=d2)
+            df_final_2 = df_final_2[df_final_2['rp'] > 0]
+            df_final_5 = pd.DataFrame(data=d5)
+            df_final_5 = df_final_5[df_final_5['rp'] > 0]
+            df_final_10 = pd.DataFrame(data=d10)
+            df_final_10 = df_final_10[df_final_10['rp'] > 0]
+            df_final_25 = pd.DataFrame(data=d25)
+            df_final_25 = df_final_25[df_final_25['rp'] > 0]
+            df_final_50 = pd.DataFrame(data=d50)
+            df_final_50 = df_final_50[df_final_50['rp'] > 0]
+            df_final_100 = pd.DataFrame(data=d100)
+            df_final_100 = df_final_100[df_final_100['rp'] > 0]
 
-                df_final_2 = pd.DataFrame(data=d2)
-                df_final_2 = df_final_2[df_final_2['rp'] > 0]
-                df_final_5 = pd.DataFrame(data=d5)
-                df_final_5 = df_final_5[df_final_5['rp'] > 0]
-                df_final_10 = pd.DataFrame(data=d10)
-                df_final_10 = df_final_10[df_final_10['rp'] > 0]
-                df_final_25 = pd.DataFrame(data=d25)
-                df_final_25 = df_final_25[df_final_25['rp'] > 0]
-                df_final_50 = pd.DataFrame(data=d50)
-                df_final_50 = df_final_50[df_final_50['rp'] > 0]
-                df_final_100 = pd.DataFrame(data=d100)
-                df_final_100 = df_final_100[df_final_100['rp'] > 0]
+            return_obj['success'] = "Data analysis complete!"
+            return_obj['warning2'] = self._create_rp(df_final_2)
+            return_obj['warning5'] = self._create_rp(df_final_5)
+            return_obj['warning10'] = self._create_rp(df_final_10)
+            return_obj['warning25'] = self._create_rp(df_final_25)
+            return_obj['warning50'] = self._create_rp(df_final_50)
+            return_obj['warning100'] = self._create_rp(df_final_100)
 
-                return_obj['success'] = "Data analysis complete!"
-                return_obj['warning2'] = self._create_rp(df_final_2)
-                return_obj['warning5'] = self._create_rp(df_final_5)
-                return_obj['warning10'] = self._create_rp(df_final_10)
-                return_obj['warning25'] = self._create_rp(df_final_25)
-                return_obj['warning50'] = self._create_rp(df_final_50)
-                return_obj['warning100'] = self._create_rp(df_final_100)
+            return return_obj
 
-                return JsonResponse(return_obj)
-
-            except Exception as e:
-                print(str(e))
-                return JsonResponse({'error': 'No data found for the selected reach.'})
+        except Exception as e:
+            print(str(e))
+            return {'error': 'No data found for the selected reach.'}
         else:
             pass
 

@@ -96,7 +96,123 @@ var Map = function(){
             layersObject.toggle_visibility_two_year_warning($('#stp-2-toggle').prop('checked'))
         })
     }
-
+    this.get_warning_points = function(map,result) {
+        // var watershed = default_watershed_name.split(' (')[0].replace(' ', '_').toLowerCase();
+        // $.ajax({
+            // type: 'GET',
+            // url: 'get-warning-points/',
+            // dataType: 'json',
+            // data: {
+            //     'model': model,
+            //     // 'watershed': watershed,
+            //     // 'subbasin': subbasin
+            // },
+            // error: function(error) {
+            //     console.log(error);
+            // },
+            // success: function(result) {
+    
+                map.getLayers().item(1).getSource().clear();
+                map.getLayers().item(2).getSource().clear();
+                map.getLayers().item(3).getSource().clear();
+                map.getLayers().item(4).getSource().clear();
+                map.getLayers().item(5).getSource().clear();
+                map.getLayers().item(6).getSource().clear();
+    
+                if (result.warning2 != 'undefined') {
+    
+                    var warLen2 = result.warning2.length;
+                    for (var i = 0; i < warLen2; ++i) {
+                        var geometry = new ol.geom.Point(ol.proj.transform([result.warning2[i][1],
+                                result.warning2[i][0]
+                            ],
+                            'EPSG:4326', 'EPSG:3857'));
+                        var feature = new ol.Feature({
+                            geometry: geometry,
+                            point_size: 40
+                        });
+                        map.getLayers().item(1).getSource().addFeature(feature);
+                    }
+                    map.getLayers().item(1).setVisible(false);
+                }
+                if (result.warning5 != 'undefined') {
+                    var warLen5 = result.warning5.length;
+                    for (var i = 0; i < warLen5; ++i) {
+                        var geometry = new ol.geom.Point(ol.proj.transform([result.warning5[i][1],
+                                result.warning5[i][0]
+                            ],
+                            'EPSG:4326', 'EPSG:3857'));
+                        var feature = new ol.Feature({
+                            geometry: geometry,
+                            point_size: 40
+                        });
+                        map.getLayers().item(2).getSource().addFeature(feature);
+                    }
+                    map.getLayers().item(2).setVisible(false);
+                }
+                if (result.warning10 != 'undefined') {
+                    var warLen10 = result.warning10.length;
+                    for (var i = 0; i < warLen10; ++i) {
+                        var geometry = new ol.geom.Point(ol.proj.transform([result.warning10[i][1],
+                                result.warning10[i][0]
+                            ],
+                            'EPSG:4326', 'EPSG:3857'));
+                        var feature = new ol.Feature({
+                            geometry: geometry,
+                            point_size: 40
+                        });
+                        map.getLayers().item(3).getSource().addFeature(feature);
+                    }
+                    map.getLayers().item(3).setVisible(false);
+                }
+                if (result.warning25 != 'undefined') {
+                    var warLen25 = result.warning25.length;
+                    for (var i = 0; i < warLen25; ++i) {
+                        var geometry = new ol.geom.Point(ol.proj.transform([result.warning25[i][1],
+                                result.warning25[i][0]
+                            ],
+                            'EPSG:4326', 'EPSG:3857'));
+                        var feature = new ol.Feature({
+                            geometry: geometry,
+                            point_size: 40
+                        });
+                        map.getLayers().item(4).getSource().addFeature(feature);
+                    }
+                    map.getLayers().item(4).setVisible(false);
+                }
+                if (result.warning50 != 'undefined') {
+                    var warLen50 = result.warning50.length;
+                    for (var i = 0; i < warLen50; ++i) {
+                        var geometry = new ol.geom.Point(ol.proj.transform([result.warning50[i][1],
+                                result.warning50[i][0]
+                            ],
+                            'EPSG:4326', 'EPSG:3857'));
+                        var feature = new ol.Feature({
+                            geometry: geometry,
+                            point_size: 40
+                        });
+                        map.getLayers().item(5).getSource().addFeature(feature);
+                    }
+                    map.getLayers().item(5).setVisible(false);
+                }
+                if (result.warning100 != 'undefined') {
+                    var warLen100 = result.warning100.length;
+                    for (var i = 0; i < warLen100; ++i) {
+                        var geometry = new ol.geom.Point(ol.proj.transform([result.warning100[i][1],
+                                result.warning100[i][0]
+                            ],
+                            'EPSG:4326', 'EPSG:3857'));
+                        var feature = new ol.Feature({
+                            geometry: geometry,
+                            point_size: 40
+                        });
+                        map.getLayers().item(6).getSource().addFeature(feature);
+                    }
+                    map.getLayers().item(6).setVisible(false);
+                }
+            // }
+        // });
+    }
 }
 
 
@@ -124,7 +240,6 @@ function view_watershed(map) {
     // var workspace = JSON.parse($('#geoserver_endpoint').val())[1];
     var workspace = geoserver_workspace
     var model = 'ECMWF-RAPID';
-    var watershed = default_watershed_name.split(' (')[0].replace(' ', '_').toLowerCase();
     var subbasin = default_watershed_name.split(' (')[1].replace(')', '').toLowerCase();
     var watershed_display_name =  default_watershed_name.split(' (')[0];
     var subbasin_display_name = default_watershed_name.split(' (')[1].replace(')', '');
@@ -183,122 +298,7 @@ function view_watershed(map) {
 
 }
 
-function get_warning_points(map,model, watershed, subbasin) {
-    $.ajax({
-        type: 'GET',
-        url: 'get-warning-points/',
-        dataType: 'json',
-        data: {
-            'model': model,
-            'watershed': watershed,
-            'subbasin': subbasin
-        },
-        error: function(error) {
-            console.log(error);
-        },
-        success: function(result) {
 
-            map.getLayers().item(1).getSource().clear();
-            map.getLayers().item(2).getSource().clear();
-            map.getLayers().item(3).getSource().clear();
-            map.getLayers().item(4).getSource().clear();
-            map.getLayers().item(5).getSource().clear();
-            map.getLayers().item(6).getSource().clear();
-
-            if (result.warning2 != 'undefined') {
-
-                var warLen2 = result.warning2.length;
-                for (var i = 0; i < warLen2; ++i) {
-                    var geometry = new ol.geom.Point(ol.proj.transform([result.warning2[i][1],
-                            result.warning2[i][0]
-                        ],
-                        'EPSG:4326', 'EPSG:3857'));
-                    var feature = new ol.Feature({
-                        geometry: geometry,
-                        point_size: 40
-                    });
-                    map.getLayers().item(1).getSource().addFeature(feature);
-                }
-                map.getLayers().item(1).setVisible(false);
-            }
-            if (result.warning5 != 'undefined') {
-                var warLen5 = result.warning5.length;
-                for (var i = 0; i < warLen5; ++i) {
-                    var geometry = new ol.geom.Point(ol.proj.transform([result.warning5[i][1],
-                            result.warning5[i][0]
-                        ],
-                        'EPSG:4326', 'EPSG:3857'));
-                    var feature = new ol.Feature({
-                        geometry: geometry,
-                        point_size: 40
-                    });
-                    map.getLayers().item(2).getSource().addFeature(feature);
-                }
-                map.getLayers().item(2).setVisible(false);
-            }
-            if (result.warning10 != 'undefined') {
-                var warLen10 = result.warning10.length;
-                for (var i = 0; i < warLen10; ++i) {
-                    var geometry = new ol.geom.Point(ol.proj.transform([result.warning10[i][1],
-                            result.warning10[i][0]
-                        ],
-                        'EPSG:4326', 'EPSG:3857'));
-                    var feature = new ol.Feature({
-                        geometry: geometry,
-                        point_size: 40
-                    });
-                    map.getLayers().item(3).getSource().addFeature(feature);
-                }
-                map.getLayers().item(3).setVisible(false);
-            }
-            if (result.warning25 != 'undefined') {
-                var warLen25 = result.warning25.length;
-                for (var i = 0; i < warLen25; ++i) {
-                    var geometry = new ol.geom.Point(ol.proj.transform([result.warning25[i][1],
-                            result.warning25[i][0]
-                        ],
-                        'EPSG:4326', 'EPSG:3857'));
-                    var feature = new ol.Feature({
-                        geometry: geometry,
-                        point_size: 40
-                    });
-                    map.getLayers().item(4).getSource().addFeature(feature);
-                }
-                map.getLayers().item(4).setVisible(false);
-            }
-            if (result.warning50 != 'undefined') {
-                var warLen50 = result.warning50.length;
-                for (var i = 0; i < warLen50; ++i) {
-                    var geometry = new ol.geom.Point(ol.proj.transform([result.warning50[i][1],
-                            result.warning50[i][0]
-                        ],
-                        'EPSG:4326', 'EPSG:3857'));
-                    var feature = new ol.Feature({
-                        geometry: geometry,
-                        point_size: 40
-                    });
-                    map.getLayers().item(5).getSource().addFeature(feature);
-                }
-                map.getLayers().item(5).setVisible(false);
-            }
-            if (result.warning100 != 'undefined') {
-                var warLen100 = result.warning100.length;
-                for (var i = 0; i < warLen100; ++i) {
-                    var geometry = new ol.geom.Point(ol.proj.transform([result.warning100[i][1],
-                            result.warning100[i][0]
-                        ],
-                        'EPSG:4326', 'EPSG:3857'));
-                    var feature = new ol.Feature({
-                        geometry: geometry,
-                        point_size: 40
-                    });
-                    map.getLayers().item(6).getSource().addFeature(feature);
-                }
-                map.getLayers().item(6).setVisible(false);
-            }
-        }
-    });
-}
 
 
 function map_events() {
