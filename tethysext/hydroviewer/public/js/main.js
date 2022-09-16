@@ -72,30 +72,7 @@ $(function() {
 });
 
 
-$('#stp-stream-toggle').on('change', function() {
-    wmsLayer.setVisible($('#stp-stream-toggle').prop('checked'))
-})
-$('#stp-stations-toggle').on('change', function() {
-    wmsLayer2.setVisible($('#stp-stations-toggle').prop('checked'))
-})
-$('#stp-100-toggle').on('change', function() {
-    hundred_year_warning.setVisible($('#stp-100-toggle').prop('checked'))
-})
-$('#stp-50-toggle').on('change', function() {
-    fifty_year_warning.setVisible($('#stp-50-toggle').prop('checked'))
-})
-$('#stp-25-toggle').on('change', function() {
-    twenty_five_year_warning.setVisible($('#stp-25-toggle').prop('checked'))
-})
-$('#stp-10-toggle').on('change', function() {
-    ten_year_warning.setVisible($('#stp-10-toggle').prop('checked'))
-})
-$('#stp-5-toggle').on('change', function() {
-    five_year_warning.setVisible($('#stp-5-toggle').prop('checked'))
-})
-$('#stp-2-toggle').on('change', function() {
-    two_year_warning.setVisible($('#stp-2-toggle').prop('checked'))
-})
+
 
 // Regions gizmo listener
 $('#regions').change(function() {getRegionGeoJsons()});

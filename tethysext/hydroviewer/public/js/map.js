@@ -40,7 +40,6 @@ var Map = function(){
 
     this.fit_view_streams_wms = function(map,geoserver_endpoint,workspace,streams_layer_name){
         var ajax_url = geoserver_endpoint.replace(/\/$/, "") + '/' + workspace + '/' + streams_layer_name +'/wfs?request=GetCapabilities';
-    
         var capabilities = $.ajax(ajax_url, {
             type: 'GET',
             data: {
@@ -50,6 +49,7 @@ var Map = function(){
                 outputFormat: 'text/javascript'
             },
             success: function() {
+                // console.log(capabilities.responseText)
                 var x = capabilities.responseText
                     .split('<FeatureTypeList>')[1]
                     .split(workspace + ':' + streams_layer_name)[1]
@@ -65,6 +65,36 @@ var Map = function(){
                 map.getView().fit(extent, map.getSize())
             }
         });
+    }
+    this.getLayersObject = function(){
+        return layersObject;
+    }
+
+    this.generate_events_map = function(){
+        $('#stp-stream-toggle').on('change', function() {
+            layersObject.toggle_visibility_streams($('#stp-stream-toggle').prop('checked'))
+        })
+        $('#stp-stations-toggle').on('change', function() {
+            layersObject.toggle_visibility_stations($('#stp-stations-toggle').prop('checked'))
+        })
+        $('#stp-100-toggle').on('change', function() {
+            layersObject.toggle_visibility_hundred_year_warning($('#stp-100-toggle').prop('checked'))
+        })
+        $('#stp-50-toggle').on('change', function() {
+            layersObject.toggle_visibility_fifty_year_warning($('#stp-50-toggle').prop('checked'))
+        })
+        $('#stp-25-toggle').on('change', function() {
+            layersObject.toggle_visibility_twenty_five_year_warning($('#stp-25-toggle').prop('checked'))
+        })
+        $('#stp-10-toggle').on('change', function() {
+            layersObject.toggle_visibility_ten_year_warning($('#stp-10-toggle').prop('checked'))
+        })
+        $('#stp-5-toggle').on('change', function() {
+            layersObject.toggle_visibility_five_year_warning($('#stp-5-toggle').prop('checked'))
+        })
+        $('#stp-2-toggle').on('change', function() {
+            layersObject.toggle_visibility_two_year_warning($('#stp-2-toggle').prop('checked'))
+        })
     }
 
 }
