@@ -1,0 +1,31 @@
+.map-view-legend {
+    bottom: 50px;
+    width: 250px;
+    height: 250px;
+    /* max-height: 90%; */
+    overflow-y: auto;
+    /* margin: 5px; */
+    color: white;
+    background: #286090;
+    border: 1px #ddd solid;
+    z-index: 999;
+    padding: 15px;
+    border-radius: 10px;
+  }
+  .map-view-legend:hover{
+    background: rgba(255,255,255,.8);
+    color:#286090;
+    font-weight: 500;
+  }
+
+.legend_Item{
+    display: flex;
+    justify-content: space-between;
+}
+.legendglyph{
+    padding-left: 5px;
+}
+
+  #map {
+    height: 100%;
+  }

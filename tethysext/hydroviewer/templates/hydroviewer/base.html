@@ -28,7 +28,11 @@
 {{ block.super }}
 <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/openlayers/4.2.0/ol.css" rel="stylesheet"/> -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/openlayers/3.20.1/ol.css" rel="stylesheet"/>
+<link href="{% static 'hydroviewer/css/map.css' %}" rel="stylesheet"/>
+
+
 <link href="{% static 'hydroviewer/css/main.css' %}" rel="stylesheet"/>
+
 {% endblock %}
 
 {% block scripts %}

@@ -28,9 +28,7 @@
 #app-actions {
   display: none;
 }
-#map {
-  height: 100%;
-}
+
 
 #graph {
   height: 100%;
@@ -46,18 +44,8 @@
   height: 220px;
   margin: 0 auto;
 }
-.map-view-legend {
-  bottom: 50px;
-  /*right: 20px;*/
-  width: 150px;
-  max-height: 90%;
-  overflow-y: auto;
-  margin: 5px;
-  color: white;
-  background: #286090;
-  border: 1px #ddd solid;
-  z-index: 999;
-}
+
+
 .flex-container-row {
   display: flex;
   flex-flow: row wrap;
