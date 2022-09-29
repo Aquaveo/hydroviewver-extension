@@ -168,19 +168,22 @@ class Ecmf:
             hydroviewer_figure.add_trace(self._template(f'50 Year: {r50}',x_vals, (r50, r50, r100, r100), colors['50 Year'],visible))
             hydroviewer_figure.add_trace(self._template(f'100 Year: {r100}',x_vals, (r100, r100, max(r100 + r100 * 0.05, max_visible), max(r100 + r100 * 0.05, max_visible)), colors['100 Year'],visible))
 
-            hydroviewer_figure['layout']['xaxis'].update(autorange=True);
+            hydroviewer_figure['layout']['xaxis'].update(autorange=True)
 
-            chart_obj = PlotlyView(hydroviewer_figure)
+            return JsonResponse({'plot_object': hydroviewer_figure})
 
-            context = {
-                'gizmo_object': chart_obj,
-            }
+            # chart_obj = PlotlyView(hydroviewer_figure)
 
-            return render(request, self.gizmo_template_name, context)
+            # context = {
+            #     'gizmo_object': chart_obj,
+            # }
+
+            # return render(request, self.gizmo_template_name, context)
 
         except Exception as e:
             print(str(e))
             return JsonResponse({'error': 'No data found for the selected reach.'})
+    
     
     def get_available_dates_watershed(self,request):
         app = get_active_app(request, get_class=True)

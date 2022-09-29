@@ -1,5 +1,7 @@
 var Map = function(){
     var layersObject = new Layers();
+    var current_layer = layersObject.get_streams_wms();
+
     this.add_base_layers_map = function (map) {
         const glofasURL = `http://globalfloods-ows.ecmwf.int/glofas-ows`    
         var wmsLayers = [
@@ -301,38 +303,23 @@ function view_watershed(map) {
 
 
 
-function map_events() {
+function map_events(wms_layers) {
     map.on('pointermove', function(evt) {
         if (evt.dragging) {
             return;
         }
         var model = $('#model option:selected').text();
         var pixel = map.getEventPixel(evt.originalEvent);
-        if (model === 'ECMWF-RAPID') {
-            var hit = map.forEachLayerAtPixel(pixel, function(layer) {
-                if (layer == feature_layer || layer == feature_layer2) {
-                    current_layer = layer;
-                    return true;
-                }
-            });
-        } else if (model === 'LIS-RAPID') {
-            var hit = map.forEachFeatureAtPixel(pixel, function(feature, layer) {
-                if (layer == feature_layer || layer == feature_layer2) {
-                    current_feature = feature;
-                    return true;
-                }
-            });
-        } else if (model === 'HIWAT-RAPID') {
-            var hit = map.forEachFeatureAtPixel(pixel, function(feature, layer) {
-                if (layer == feature_layer || layer == feature_layer2) {
-                    current_feature = feature;
-                    return true;
-                }
-            });
-        }
+        var hit = map.forEachLayerAtPixel(pixel, function(layer) {
+            if ( wms_layers.filter((wms_layer)=> layer== wms_layer )) {
+            //if(layer == feature_layer || layer == feature_layer2) {    
+                current_layer = layer;
+                return true;
+            }
 
-        map.getTargetElement().style.cursor = hit ? 'pointer' : '';
-    });
+            map.getTargetElement().style.cursor = hit ? 'pointer' : '';
+        });
+    })
 
     map.on("singleclick", function(evt) {
         var model = $('#model option:selected').text();
@@ -342,48 +329,47 @@ function map_events() {
             var view = map.getView();
             var viewResolution = view.getResolution();
 
-            if (model === 'ECMWF-RAPID') {
-                var wms_url = current_layer.getSource().getGetFeatureInfoUrl(evt.coordinate, viewResolution, view.getProjection(), { 'INFO_FORMAT': 'application/json' }); //Get the wms url for the clicked point
+            var wms_url = current_layer.getSource().getGetFeatureInfoUrl(evt.coordinate, viewResolution, view.getProjection(), { 'INFO_FORMAT': 'application/json' }); //Get the wms url for the clicked point
 
-                if (current_layer["H"]["source"]["i"]["LAYERS"] == "SENAMHI_Stations_RT_v3") {
+                // if (current_layer["H"]["source"]["i"]["LAYERS"] == "SENAMHI_Stations_RT_v3") {
 
-                        $("#obsgraph").modal('show');
-                        $('#observed-chart-WL').addClass('hidden');
-                        $('#observed-chart-WL').empty();
-                        $("#station-info").empty();
-                        $("#pdf-url").empty();
-                        $('#download_observed_waterlevel').addClass('hidden');
+                //         $("#obsgraph").modal('show');
+                //         $('#observed-chart-WL').addClass('hidden');
+                //         $('#observed-chart-WL').empty();
+                //         $("#station-info").empty();
+                //         $("#pdf-url").empty();
+                //         $('#download_observed_waterlevel').addClass('hidden');
 
-                        $.ajax({
-                            type: "GET",
-                            url: wms_url,
-                            dataType: 'json',
-                            success: function (result) {
-                                stationcode = result["features"][0]["properties"]["code"];
-                                oldcode = result["features"][0]["properties"]["old_code"];
-                                stationname = result["features"][0]["properties"]["nombre"];
-                                stationtype = result["features"][0]["properties"]["icono"];
-                                stationcat = result["features"][0]["properties"]["categoria"];
-                                stationstatus = result["features"][0]["properties"]["estado"];
-                                stream = result["features"][0]["properties"]["Rio"];
-                                $('#obsdates').removeClass('hidden');
-                                var startdateobs = $('#startdateobs').val();
-                                var enddateobs = $('#enddateobs').val();
-                                $("#station-info").append('<h3 id="Station-Name-Tab">Current Station: '+ stationname
-                        			+ '</h3><h5 id="Station-Code-Tab">Station Code: ' + stationcode
-                        			+ '</h5><h5 id="Station-Old-Code-Tab">Station Old Code: ' + oldcode
-                        			+ '</h5><h5 id="Station-Status-Tab">Station Status: ' + stationstatus
-                        			+ '</h5><h5>Stream: '+ stream + '</h5>');
+                //         $.ajax({
+                //             type: "GET",
+                //             url: wms_url,
+                //             dataType: 'json',
+                //             success: function (result) {
+                //                 stationcode = result["features"][0]["properties"]["code"];
+                //                 oldcode = result["features"][0]["properties"]["old_code"];
+                //                 stationname = result["features"][0]["properties"]["nombre"];
+                //                 stationtype = result["features"][0]["properties"]["icono"];
+                //                 stationcat = result["features"][0]["properties"]["categoria"];
+                //                 stationstatus = result["features"][0]["properties"]["estado"];
+                //                 stream = result["features"][0]["properties"]["Rio"];
+                //                 $('#obsdates').removeClass('hidden');
+                //                 var startdateobs = $('#startdateobs').val();
+                //                 var enddateobs = $('#enddateobs').val();
+                //                 $("#station-info").append('<h3 id="Station-Name-Tab">Current Station: '+ stationname
+                //         			+ '</h3><h5 id="Station-Code-Tab">Station Code: ' + stationcode
+                //         			+ '</h5><h5 id="Station-Old-Code-Tab">Station Old Code: ' + oldcode
+                //         			+ '</h5><h5 id="Station-Status-Tab">Station Status: ' + stationstatus
+                //         			+ '</h5><h5>Stream: '+ stream + '</h5>');
 
-                        		url = 'https://www.senamhi.gob.pe/mapas/mapa-estaciones-2/map_red_graf.php?cod=' + stationcode + '&estado=' + stationstatus + '&tipo_esta=' + stationtype + '&cate=' + stationcat + '&cod_old=' + oldcode;
-                        		console.log(url)
+                //         		url = 'https://www.senamhi.gob.pe/mapas/mapa-estaciones-2/map_red_graf.php?cod=' + stationcode + '&estado=' + stationstatus + '&tipo_esta=' + stationtype + '&cate=' + stationcat + '&cod_old=' + oldcode;
+                //         		console.log(url)
 
-                        		get_waterlevel_info (stationcode, stationname, oldcode, stationtype, stationcat, stationstatus, stream)
+                //         		get_waterlevel_info (stationcode, stationname, oldcode, stationtype, stationcat, stationstatus, stream)
 
-                            }
-                        });
+                //             }
+                //         });
 
-                }
+                // }
 
                 //if (wms_url) {
                 else {
@@ -443,7 +429,7 @@ function map_events() {
                         }
                     });
                 }
-            }
+            
         };
     });
 
