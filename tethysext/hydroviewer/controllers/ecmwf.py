@@ -3,6 +3,7 @@ import datetime as dt
 import io
 import json
 import os
+import httpx
 
 import geoglows
 import hydrostats
@@ -17,6 +18,7 @@ from tethys_apps.utilities import get_active_app
 from tethys_sdk.gizmos import *
 from tethys_sdk.gizmos import Button, DatePicker, PlotlyView, SelectInput
 from tethys_sdk.permissions import has_permission
+import asyncio
 
 base_name = 'hydroviewer'
 
@@ -170,7 +172,9 @@ class Ecmf:
 
             hydroviewer_figure['layout']['xaxis'].update(autorange=True)
 
-            return JsonResponse({'plot_object': hydroviewer_figure})
+            # return JsonResponse({'plot_object': hydroviewer_figure})
+            return hydroviewer_figure
+
 
             # chart_obj = PlotlyView(hydroviewer_figure)
 
@@ -280,14 +284,15 @@ class Ecmf:
             rperiods_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
 
             hydroviewer_figure = geoglows.plots.historic_simulation(simulated_df, rperiods_df, titles={'Reach ID': comid})
+            return hydroviewer_figure
+            
+            # chart_obj = PlotlyView(hydroviewer_figure)
 
-            chart_obj = PlotlyView(hydroviewer_figure)
+            # context = {
+            #     'gizmo_object': chart_obj,
+            # }
 
-            context = {
-                'gizmo_object': chart_obj,
-            }
-
-            return render(request, self.gizmo_template_name, context)
+            # return render(request, self.gizmo_template_name, context)
 
         except Exception as e:
             print(str(e))
@@ -742,3 +747,140 @@ class Ecmf:
         
         # return render(request, '{0}/ecmwf.html'.format(base_name), context)
         return pre_context
+
+    async def async_request(self,request):
+        async_client = httpx.AsyncClient()
+
+        tasks = [asyncio.create_task(self.forecast_async_wrapper(request,async_client))]
+        # tasks = [asyncio.create_task(self.forecast_async_wrapper(request,async_client)),asyncio.create_task(self.historical_async_wrapper(request,async_client))]
+
+        results = asyncio.gather(*tasks)
+        
+
+    async def forecast_async_wrapper(self,request,async_client):
+        active_app = get_active_app(request, get_class=True)
+
+        get_data = request.GET
+        try:
+            comid = get_data['comid']
+
+            '''Getting Forecast Stats'''
+            if get_data['startdate'] != '':
+                startdate = get_data['startdate']
+                response_await = await async_client.get(
+                        url =  active_app.get_custom_setting(self.cs_api_source) + '/api/ForecastStats',
+                        params = {
+                            "reach_id": comid,
+                            "date": startdate,
+                            "return_format": 'csv',
+                        }
+                    )
+            else:
+
+                response_await = await async_client.get(
+                        url =  active_app.get_custom_setting(self.cs_api_source) + '/api/ForecastStats',
+                        params = {
+                            "reach_id": comid,
+                            "return_format": 'csv',
+                        }
+                    )
+            stats_df = pd.read_csv(io.StringIO(response_await.text), index_col=0)
+            stats_df.index = pd.to_datetime(stats_df.index)
+            stats_df[stats_df < 0] = 0
+            stats_df.index = stats_df.index.to_series().dt.strftime("%Y-%m-%d %H:%M:%S")
+            stats_df.index = pd.to_datetime(stats_df.index)
+
+            hydroviewer_figure = geoglows.plots.forecast_stats(stats=stats_df, titles={'Reach ID': comid})
+
+            x_vals = (stats_df.index[0], stats_df.index[len(stats_df.index) - 1], stats_df.index[len(stats_df.index) - 1], stats_df.index[0])
+            max_visible = max(stats_df.max())
+
+            '''Getting Forecast Records'''
+            res = requests.get(
+                active_app.get_custom_setting(self.cs_api_source) + '/api/ForecastRecords/?reach_id=' + comid + '&return_format=csv',
+                verify=False).content
+
+            records_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
+            records_df.index = pd.to_datetime(records_df.index)
+            records_df[records_df < 0] = 0
+            records_df.index = records_df.index.to_series().dt.strftime("%Y-%m-%d %H:%M:%S")
+            records_df.index = pd.to_datetime(records_df.index)
+
+            records_df = records_df.loc[records_df.index >= pd.to_datetime(stats_df.index[0] - dt.timedelta(days=8))]
+            records_df = records_df.loc[records_df.index <= pd.to_datetime(stats_df.index[0] + dt.timedelta(days=2))]
+
+            if len(records_df.index) > 0:
+                hydroviewer_figure.add_trace(go.Scatter(
+                    name='1st days forecasts',
+                    x=records_df.index,
+                    y=records_df.iloc[:, 0].values,
+                    line=dict(
+                        color='#FFA15A',
+                    )
+                ))
+
+                x_vals = (records_df.index[0], stats_df.index[len(stats_df.index) - 1], stats_df.index[len(stats_df.index) - 1], records_df.index[0])
+                max_visible = max(max(records_df.max()), max_visible)
+
+            '''Getting Return Periods'''
+            res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/ReturnPeriods/?reach_id=' + comid + '&return_format=csv',
+                verify=False).content
+            rperiods_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
+
+            r2 = int(rperiods_df.iloc[0]['return_period_2'])
+
+            colors = {
+                '2 Year': 'rgba(254, 240, 1, .4)',
+                '5 Year': 'rgba(253, 154, 1, .4)',
+                '10 Year': 'rgba(255, 56, 5, .4)',
+                '20 Year': 'rgba(128, 0, 246, .4)',
+                '25 Year': 'rgba(255, 0, 0, .4)',
+                '50 Year': 'rgba(128, 0, 106, .4)',
+                '100 Year': 'rgba(128, 0, 246, .4)',
+            }
+
+            if max_visible > r2:
+                visible = True
+                hydroviewer_figure.for_each_trace(
+                    lambda trace: trace.update(visible=True) if trace.name == "Maximum & Minimum Flow" else (), )
+            else:
+                visible = 'legendonly'
+                hydroviewer_figure.for_each_trace(
+                    lambda trace: trace.update(visible=True) if trace.name == "Maximum & Minimum Flow" else (), )
+
+            r5 = int(rperiods_df.iloc[0]['return_period_5'])
+            r10 = int(rperiods_df.iloc[0]['return_period_10'])
+            r25 = int(rperiods_df.iloc[0]['return_period_25'])
+            r50 = int(rperiods_df.iloc[0]['return_period_50'])
+            r100 = int(rperiods_df.iloc[0]['return_period_100'])
+
+            hydroviewer_figure.add_trace(self._template('Return Periods',x_vals, (r100 * 0.05, r100 * 0.05, r100 * 0.05, r100 * 0.05), 'rgba(0,0,0,0)',visible, fill='none'))
+            hydroviewer_figure.add_trace(self._template(f'2 Year: {r2}',x_vals, (r2, r2, r5, r5), colors['2 Year'],visible))
+            hydroviewer_figure.add_trace(self._template(f'5 Year: {r5}',x_vals, (r5, r5, r10, r10), colors['5 Year'],visible))
+            hydroviewer_figure.add_trace(self._template(f'10 Year: {r10}',x_vals, (r10, r10, r25, r25), colors['10 Year'],visible))
+            hydroviewer_figure.add_trace(self._template(f'25 Year: {r25}',x_vals, (r25, r25, r50, r50), colors['25 Year'],visible))
+            hydroviewer_figure.add_trace(self._template(f'50 Year: {r50}',x_vals, (r50, r50, r100, r100), colors['50 Year'],visible))
+            hydroviewer_figure.add_trace(self._template(f'100 Year: {r100}',x_vals, (r100, r100, max(r100 + r100 * 0.05, max_visible), max(r100 + r100 * 0.05, max_visible)), colors['100 Year'],visible))
+
+            hydroviewer_figure['layout']['xaxis'].update(autorange=True)
+
+            # return JsonResponse({'plot_object': hydroviewer_figure})
+            return hydroviewer_figure
+
+
+            # chart_obj = PlotlyView(hydroviewer_figure)
+
+            # context = {
+            #     'gizmo_object': chart_obj,
+            # }
+
+            # return render(request, self.gizmo_template_name, context)
+
+        except Exception as e:
+            print(str(e))
+            return JsonResponse({'error': 'No data found for the selected reach.'})
+
+    async def historical_async_wrapper(self,request):
+        return self.get_historic_data(request)
+
+
