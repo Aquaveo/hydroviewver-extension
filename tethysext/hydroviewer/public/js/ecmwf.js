@@ -4,6 +4,9 @@ var GeoGlows = function(){
         $loading.removeClass('hidden');
         $('#long-term-chart').addClass('hidden');
         $('#dates').addClass('hidden');
+        
+        $('#long-term-chart').empty();
+
         $.ajax({
             type: 'GET',
             url: url,
@@ -62,6 +65,9 @@ var GeoGlows = function(){
     }
     this.get_historical_data = function(url,watershed, subbasin, comid, startdate){
         $('#his-view-file-loading').removeClass('hidden');
+        $('#historical-chart').addClass('hidden');
+       
+        $('#historical-chart').empty();
         console.log(comid)
         m_downloaded_historical_streamflow = true;
         $.ajax({
@@ -79,8 +85,8 @@ var GeoGlows = function(){
                     $("#historical").removeClass("hidden");
 
                     $('#his-view-file-loading').addClass('hidden');
-                    $('#historical-chart').removeClass('hidden');
                     $('#historical-chart').html(data);
+                    $('#historical-chart').removeClass('hidden');
                     Plotly.Plots.resize($("#historical-chart .js-plotly-plot")[0]);
     
                     // var params = {

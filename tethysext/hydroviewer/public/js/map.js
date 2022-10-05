@@ -27,9 +27,9 @@ var Map = function(){
         // var layersObject = new Layers();
         console.log(layersObject);
         layersObject.set_streams_wms(geoserver_endpoint,streams_layer);
-        var streams_wms = layersObject.get_streams_wms()
+        var streams_wms = layersObject.get_streams_wms();
         layersObject.set_stations_wms(geoserver_endpoint,stations_layer);
-        var stations_wms = layersObject.get_stations_wms()
+        var stations_wms = layersObject.get_stations_wms();
         // wmsLayer = streams_wms;
         // wmsLayer2 = stations_wms;
         // feature_layer = wmsLayer;
@@ -223,7 +223,6 @@ var Map = function(){
                         // get_monthly_seasonal_streamflow(model, watershed, subbasin, comid, startdate);
                         // get_forecast_percent(watershed, subbasin, comid, startdate);
     this.create_wms_events_popup = function(map,wms_layers,forecast_url, historic_data_url, flow_duration_curve_url,daily_seasonal_streamflow_url,monthly_seasonal_streamflow_url, forecast_percent_url ){
-        // console.log("wms_ewvbents")
         map.on('pointermove', function(evt) {
             if (evt.dragging) {
                 return;
@@ -231,7 +230,7 @@ var Map = function(){
             // var model = $('#model option:selected').text();
             var pixel = map.getEventPixel(evt.originalEvent);
             var hit = map.forEachLayerAtPixel(pixel, function(layer) {
-                if (wms_layers.filter((wms_layer)=> layer== wms_layer )) {
+                if (wms_layers.filter((wms_layer)=> layer== wms_layer).length > 0) {
                     current_layer = layer;
                     return true;
                 }
@@ -292,7 +291,7 @@ var Map = function(){
                             
                         }
                         catch(err){
-                            console.log("errir")
+                            console.log(err)
                         }
 
                         // get_available_dates(model, watershed, subbasin, comid);
@@ -321,12 +320,6 @@ var Map = function(){
         });        
     }
 
-    function map_events(wms_layers) {
-
-    
-
-    
-    }
 
 }
 
