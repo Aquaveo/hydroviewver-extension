@@ -78,19 +78,19 @@ function get_historic_data(model, watershed, subbasin, comid, startdate) {
                 $('#historical-chart').removeClass('hidden');
                 $('#historical-chart').html(data);
 
-                var params = {
-                    watershed_name: watershed,
-                    subbasin_name: subbasin,
-                    reach_id: comid,
-                    daily: false
-                };
+                // var params = {
+                //     watershed_name: watershed,
+                //     subbasin_name: subbasin,
+                //     reach_id: comid,
+                //     daily: false
+                // };
 
-                $('#submit-download-5-csv').attr({
-                    target: '_blank',
-                    href: 'get-historic-data-csv?' + jQuery.param(params)
-                });
+                // $('#submit-download-5-csv').attr({
+                //     target: '_blank',
+                //     href: 'get-historic-data-csv?' + jQuery.param(params)
+                // });
 
-                $('#download_era_5').removeClass('hidden');
+                // $('#download_era_5').removeClass('hidden');
 
             } else if (data.error) {
                 $('#info').html('<p class="alert alert-danger" style="text-align: center"><strong>An unknown error occurred while retrieving the historic data</strong></p>');
