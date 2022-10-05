@@ -222,7 +222,7 @@ var Map = function(){
                         // get_daily_seasonal_streamflow(model, watershed, subbasin, comid, startdate);
                         // get_monthly_seasonal_streamflow(model, watershed, subbasin, comid, startdate);
                         // get_forecast_percent(watershed, subbasin, comid, startdate);
-    this.create_wms_events = function(map,wms_layers,forecast_url, historic_data_url, flow_duration_curve_url,daily_seasonal_streamflow_url,monthly_seasonal_streamflow_url, forecast_percent_url ){
+    this.create_wms_events_popup = function(map,wms_layers,forecast_url, historic_data_url, flow_duration_curve_url,daily_seasonal_streamflow_url,monthly_seasonal_streamflow_url, forecast_percent_url ){
         // console.log("wms_ewvbents")
         map.on('pointermove', function(evt) {
             if (evt.dragging) {
@@ -286,6 +286,10 @@ var Map = function(){
                             if (forecast_url !== undefined) {
                                 geoglows_model.get_time_series(forecast_url,watershed, subbasin, comid, startdate);
                             }
+                            if (historic_data_url !== undefined) {
+                                geoglows_model.get_historical_data(historic_data_url,watershed, subbasin, comid, startdate);
+                            }
+                            
                         }
                         catch(err){
                             console.log("errir")
