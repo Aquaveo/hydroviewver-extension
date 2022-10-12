@@ -348,9 +348,13 @@ function view_watershed(map) {
     // var workspace = JSON.parse($('#geoserver_endpoint').val())[1];
     var workspace = geoserver_workspace
     var model = 'ECMWF-RAPID';
-    var subbasin = default_watershed_name.split(' (')[1].replace(')', '').toLowerCase();
-    var watershed_display_name =  default_watershed_name.split(' (')[0];
-    var subbasin_display_name = default_watershed_name.split(' (')[1].replace(')', '');
+    // var subbasin = default_watershed_name.split(' (')[1].replace(')', '').toLowerCase();
+    // var watershed_display_name =  default_watershed_name.split(' (')[0];
+    // var subbasin_display_name = default_watershed_name.split(' (')[1].replace(')', '');
+
+    var subbasin = default_subasin_name
+    var watershed_display_name =  default_watershed_name
+    var subbasin_display_name = subbasin
     $("#watershed-info").append('<h3>Current Watershed: ' + watershed_display_name + '</h3><h5>Subbasin Name: ' + subbasin_display_name);
 
     // var layerName = workspace + ':' + watershed + '-' + subbasin + '-geoglows-drainage_line';

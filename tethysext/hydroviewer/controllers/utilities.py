@@ -214,15 +214,12 @@ class Utilities:
         session.commit()
 
         if historical_simulation_query.first() is not None:
-            print("we have records in db for hs")
             simulated_df = pd.read_sql(historical_simulation_query.statement, historical_simulation_query.session.bind, index_col='datetime')
             simulated_df = simulated_df.rename(columns={'stream_flow':'streamflow_m^3/s'})
             simulated_df = simulated_df.drop(columns=['reach_id', 'id'])
             return simulated_df
 
         else:
-            print("we dont have records in db for hs")
-
             era_res = requests.get(active_app.get_custom_setting(cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv', verify=False).content
             simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
             simulated_df[simulated_df < 0] = 0

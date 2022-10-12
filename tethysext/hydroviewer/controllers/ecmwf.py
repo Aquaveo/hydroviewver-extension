@@ -37,6 +37,8 @@ class Ecmf:
     # cs_geojson_path='static_GeoJSON_path'
     cs_keywords='keywords'
     cs_default_watershed_name='default_watershed_name'
+    cs_default_subbasin_name='default_subbasin_name'
+
     utilities_object = Utilities()
     # cd_default_model_type = 'default_model_type'
     # # parameterized constructor
@@ -248,14 +250,17 @@ class Ecmf:
     def get_available_dates_watershed(self,request):
         app = get_active_app(request, get_class=True)
         api_base_endpoint = app.get_custom_setting(self.cs_api_source)
-        watershed = app.get_custom_setting(self.cs_default_watershed_name).split(' (')[0].replace(' ', '_').lower();
+        # watershed = app.get_custom_setting(self.cs_default_watershed_name).split(' (')[0].replace(' ', '_').lower();
+        watershed = app.get_custom_setting(self.cs_default_watershed_name)
+
 
         # print(api_base_endpoint,watershed,subbasin)
         res = requests.get(
-            api_base_endpoint + '/api/AvailableDates/?region=' + watershed + '-' + 'geoglows',
+            # api_base_endpoint + '/api/AvailableDates/?region=' + watershed + '-' + 'geoglows',
+            api_base_endpoint + '/api/AvailableDates/?region=' + watershed ,
             verify=False)        
         data = res.json()
-        # print(data)
+        print(data)
         dates_array = (data.get('available_dates'))
 
         dates = []
@@ -420,27 +425,23 @@ class Ecmf:
     def get_flow_duration_curve(self,request):
         get_data = request.GET
         active_app = get_active_app(request, get_class=True)
-
+        SessionMaker = active_app.get_persistent_store_database("geoglows", as_sessionmaker=True)
+        session = SessionMaker()
         try:
             comid = get_data['comid']
+            simulated_df = self.utilities_object.cache_historical_simulation(active_app,self.cs_api_source,comid,session)
 
-            era_res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv', verify=False).content
+            # era_res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv', verify=False).content
 
-            simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
-            simulated_df[simulated_df < 0] = 0
-            simulated_df.index = pd.to_datetime(simulated_df.index)
-            simulated_df.index = simulated_df.index.to_series().dt.strftime("%Y-%m-%d")
+            # simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
+            # simulated_df[simulated_df < 0] = 0
+            # simulated_df.index = pd.to_datetime(simulated_df.index)
+            # simulated_df.index = simulated_df.index.to_series().dt.strftime("%Y-%m-%d")
             simulated_df.index = pd.to_datetime(simulated_df.index)
 
             hydroviewer_figure = geoglows.plots.flow_duration_curve(simulated_df, titles={'Reach ID': comid})
             return hydroviewer_figure
-                # chart_obj = PlotlyView(hydroviewer_figure)
 
-            # context = {
-            #     'gizmo_object': chart_obj,
-            # }
-
-            # return render(request, self.gizmo_template_name, context)
 
         except Exception as e:
             print(str(e))
@@ -452,20 +453,22 @@ class Ecmf:
         """
         get_data = request.GET
         active_app = get_active_app(request, get_class=True)
-
+        SessionMaker = active_app.get_persistent_store_database("geoglows", as_sessionmaker=True)
+        session = SessionMaker()
 
         try:
 
             comid = get_data['comid']
+            simulated_df = self.utilities_object.cache_historical_simulation(active_app,self.cs_api_source,comid,session)
 
-            era_res = requests.get(
-                active_app.get_custom_setting(self.cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv',
-                verify=False).content
+            # era_res = requests.get(
+            #     active_app.get_custom_setting(self.cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv',
+            #     verify=False).content
 
-            simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
-            simulated_df[simulated_df < 0] = 0
-            simulated_df.index = pd.to_datetime(simulated_df.index)
-            simulated_df.index = simulated_df.index.to_series().dt.strftime("%Y-%m-%d")
+            # simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
+            # simulated_df[simulated_df < 0] = 0
+            # simulated_df.index = pd.to_datetime(simulated_df.index)
+            # simulated_df.index = simulated_df.index.to_series().dt.strftime("%Y-%m-%d")
             simulated_df.index = pd.to_datetime(simulated_df.index)
 
             dayavg_df = hydrostats.data.daily_average(simulated_df, rolling=True)
@@ -490,19 +493,21 @@ class Ecmf:
         """
         get_data = request.GET
         active_app = get_active_app(request, get_class=True)
-
+        SessionMaker = active_app.get_persistent_store_database("geoglows", as_sessionmaker=True)
+        session = SessionMaker()
 
         try:
             comid = get_data['comid']
+            simulated_df = self.utilities_object.cache_historical_simulation(active_app,self.cs_api_source,comid,session)
 
-            era_res = requests.get(
-                active_app.get_custom_setting(self.cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv',
-                verify=False).content
+            # era_res = requests.get(
+            #     active_app.get_custom_setting(self.cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv',
+            #     verify=False).content
 
-            simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
-            simulated_df[simulated_df < 0] = 0
-            simulated_df.index = pd.to_datetime(simulated_df.index)
-            simulated_df.index = simulated_df.index.to_series().dt.strftime("%Y-%m-%d")
+            # simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
+            # simulated_df[simulated_df < 0] = 0
+            # simulated_df.index = pd.to_datetime(simulated_df.index)
+            # simulated_df.index = simulated_df.index.to_series().dt.strftime("%Y-%m-%d")
             simulated_df.index = pd.to_datetime(simulated_df.index)
 
             monavg_df = hydrostats.data.monthly_average(simulated_df)
@@ -668,7 +673,8 @@ class Ecmf:
     def get_warning_points(self,request):
         get_data = request.GET
         active_app = get_active_app(request, get_class=True)
-        watershed = active_app.get_custom_setting(self.cs_default_watershed_name).split(' (')[0].replace(' ', '_').lower();
+        # watershed = active_app.get_custom_setting(self.cs_default_watershed_name).split(' (')[0].replace(' ', '_').lower();
+        watershed = active_app.get_custom_setting(self.cs_default_watershed_name)
 
         # peru_id_path = os.path.join(app_workspace.path, 'peru_reachids.csv')
         reach_id_paths = active_app.get_custom_setting(self.cs_reach_ids)
@@ -814,7 +820,9 @@ class Ecmf:
         #                             disabled=True)
 
 
-        subasin = app.get_custom_setting(self.cs_default_watershed_name).split(' (')[1].replace(')', '').lower();
+        # subasin = app.get_custom_setting(self.cs_default_watershed_name).split(' (')[1].replace(')', '').lower()
+
+
         # dates = self._get_available_dates(api_base_endpoint,watershed,subasin)
 
         # Date Picker Options
@@ -841,7 +849,9 @@ class Ecmf:
         pre_context = {
             "base_name": base_name,
             "default_watershed_name": app.get_custom_setting(self.cs_default_watershed_name),
-            "default_subasin_name":subasin,
+            # "default_subasin_name":subasin,
+            "default_subasin_name":app.get_custom_setting(self.cs_default_subbasin_name),
+
             "geoserver_url": geoserver_base_url,
             "geoserver_workspace":geoserver_workspace,
             "geoserver_region": region,

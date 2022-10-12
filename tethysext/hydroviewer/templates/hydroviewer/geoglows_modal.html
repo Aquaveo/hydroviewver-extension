@@ -1,6 +1,7 @@
 <!-- GeoGloWs Data Modal -->
-{% load staticfiles %}
+{% load static %}
 {% load tethys_gizmos %}  
+
 
 <div class="modal fade" id="graph" tabindex="-1" role="dialog" aria-labelledby="about-modal-label">
     <div class="modal-dialog" role="document">
@@ -16,6 +17,67 @@
           <div id="interaction"></div>
         </div>
         <div class="modal-body">
+
+          <div class="row collapse">
+            <div class="medium-3 columns">
+              <ul class="vertical tabs" data-tabs id="example-tabs">
+                <li class="tabs-title is-active"><a href="#panel1v" aria-selected="true">Tab 1</a></li>
+                <li class="tabs-title"><a href="#panel2v">Tab 2</a></li>
+                <li class="tabs-title"><a href="#panel3v">Tab 3</a></li>
+                <li class="tabs-title"><a href="#panel4v">Tab 4</a></li>
+                <li class="tabs-title"><a href="#panel5v">Tab 5</a></li>
+                <li class="tabs-title"><a href="#panel6v">Tab 6</a></li>
+              </ul>
+            </div>
+            <div class="medium-9 columns">
+              <div class="tabs-content" data-tabs-content="example-tabs">
+                <div class="tabs-panel is-active" id="panel1v">
+                  <p>One</p>
+                  <p>Check me out! I'm a super cool Tab panel with text content!</p>
+                </div>
+                <div class="tabs-panel" id="panel2v">
+                  <p>Two</p>
+                  <img class="thumbnail" src="//foundation.zurb.com/sites/docs/assets/img/generic/rectangle-7.jpg">
+                </div>
+                <div class="tabs-panel" id="panel3v">
+                  <p>Three</p>
+                  <p>Check me out! I'm a super cool Tab panel with text content!</p>
+                </div>
+                <div class="tabs-panel" id="panel4v">
+                  <p>Four</p>
+                  <img class="thumbnail" src="//foundation.zurb.com/sites/docs/assets/img/generic/rectangle-2.jpg">
+                </div>
+                <div class="tabs-panel" id="panel5v">
+                  <p>Five</p>
+                  <p>Check me out! I'm a super cool Tab panel with text content!</p>
+                </div>
+                <div class="tabs-panel" id="panel6v">
+                  <p>Six</p>
+                  <img class="thumbnail" src="//foundation.zurb.com/sites/docs/assets/img/generic/rectangle-8.jpg">
+                </div>
+              </div>
+            </div>
+          </div>
+          
+
+          <!-- <div class= "horizontal_flex">
+            <div class="tabs">
+              
+              <li ><a id="forecast_tab_link" href="" aria-controls="forecast_tab" role="tab" data-toggle="tab">Forecast</a></li>
+              <li id="historical_tab_link_li"><a id="historical_tab_link" href="">Historical Simulation</a></li>
+              <li id="flow_duration_tab_link_li"><a id="flow_duration_tab_link">Flow Duration Curve</a></li>
+              <li id="seasonal_d_tab_link_li"><a id="seasonal_d_tab_link"> Daily Seasonal Streamflow</a></li>
+              <li id="seasonal_m_tab_link_li"><a id="seasonal_m_tab_link"> Monthly Seasonal Streamflow</a></li>
+
+              <li ><a href="">Download</a></li>
+            </div>
+            <div class="tabs_contents">
+
+            </div>
+
+          </div> -->
+
+          
           <!-- Nav tabs -->
           <ul class="nav nav-tabs" role="tablist">
             <li role="presentation" class="active"><a id="forecast_tab_link" href="#forecast_tab" aria-controls="forecast_tab" role="tab" data-toggle="tab">Forecast</a></li>
@@ -30,8 +92,7 @@
               <div class="panel panel-default">
                 <div class="panel-body">
                   <div id="dates" class="hidden form-group" style="padding: 30px 30px 20px 0">
-                    <!-- <select id="datesSelect" class="form-control"></select> -->
-                    <!-- {% gizmo date_picker %} -->
+
                   </div>
                   <div class="flex-container-row"><img id="view-file-loading" class="view-file hidden" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
                   <div id="long-term-chart"></div>
@@ -47,7 +108,29 @@
                 <div id="historical-chart" class="panel-body"></div>
               </div>
             </div><!-- /.tab-pane -->
-            <div role="tabpanel" class="tab-pane hidden" id="flow_duration">
+            
+            <div role="tabpanel" class="tab-pane hidden" id="flow_duration_curve">
+              <div class="panel panel-default">
+                <div class="flex-container-row"><img id="fdc-view-file-loading" class="view-file hidden" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
+                <div id='fdc-chart' class="panel-body"></div>
+              </div>
+            </div><!-- /.tab-pane -->
+            
+            <div role="tabpanel" class="tab-pane hidden" id="seasonal_d">
+              <div class="panel panel-default">
+                <div class="flex-container-row"><img id="seasonal_d-view-file-loading" class="view-file hidden" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
+                <div id='seasonal_d-chart' class="panel-body"></div>
+              </div>
+            </div><!-- /.tab-pane -->
+
+            <div role="tabpanel" class="tab-pane hidden" id="seasonal_m">
+              <div class="panel panel-default">
+                <div class="flex-container-row"><img id="seasonal_m-view-file-loading" class="view-file hidden" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
+                <div id='seasonal_m-chart' class="panel-body"></div>
+              </div>
+            </div><!-- /.tab-pane -->
+
+            <!-- <div role="tabpanel" class="tab-pane hidden" id="flow_duration">
               <div class="panel panel-default">
                 <div class="flex-container-row"><img id="fdc-view-file-loading" class="view-file hidden" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
                 <div id='fdc-chart' class="panel-body"></div>
@@ -56,7 +139,8 @@
                 <div class="flex-container-row"><img id="seasonal_m-view-file-loading" class="view-file hidden" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
                 <div id='seasonal_m-chart' class="panel-body"></div>
               </div>
-            </div><!-- /.tab-pane -->
+            </div> -->
+            <!-- /.tab-pane -->
             <div role="tabpanel" class="tab-pane" id="download">
               <div class="panel panel-default">
                 <div class="panel-body">
