@@ -614,12 +614,13 @@ class Ecmf:
             print(str(e))
             return JsonResponse({'error': 'No forecast data found.'})
 
-    def forecastpercent(self,request):
+    def get_forecast_percent(self,request):
 
         # Check if its an ajax post request
         get_data = request.GET
         active_app = get_active_app(request, get_class=True)
-
+        SessionMaker = active_app.get_persistent_store_database("geoglows", as_sessionmaker=True)
+        session = SessionMaker()
 
         try:
 
@@ -661,17 +662,19 @@ class Ecmf:
             ensemble_df.index = pd.to_datetime(ensemble_df.index)
 
             '''Getting Return Periods'''
-            res = requests.get(
-                active_app.get_custom_setting(self.cs_api_source) + '/api/ReturnPeriods/?reach_id=' + comid + '&return_format=csv',
-                verify=False).content
-            rperiods_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
+            rperiods_df = self.utilities_object.cache_return_periods(active_app,self.cs_api_source,comid,session)
+
+            # res = requests.get(
+            #     active_app.get_custom_setting(self.cs_api_source) + '/api/ReturnPeriods/?reach_id=' + comid + '&return_format=csv',
+            #     verify=False).content
+            # rperiods_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
 
             table = geoglows.plots.probabilities_table(stats_df, ensemble_df, rperiods_df)
-
-            return HttpResponse(table)
+            return table
+            # return HttpResponse(table)
 
         except Exception:
-            return JsonResponse({'error': 'No data found for the selected station.'})
+            return {'error': 'No data found for the selected station.'}
 
     def get_warning_points(self,request):
         get_data = request.GET

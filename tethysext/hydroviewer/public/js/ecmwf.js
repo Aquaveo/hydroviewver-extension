@@ -210,6 +210,29 @@ var GeoGlows = function(){
             }
         });
     };
-
+    this.get_forecast_percent = function(url,watershed, subbasin, comid, startdate){
+        $.ajax({
+            type: 'GET',
+            url: url,
+            data: {
+                'watershed': watershed,
+                'subbasin': subbasin,
+                'comid': comid,
+                'startdate': startdate
+            },
+            error: function(xhr, errmsg, err) {
+                $('#table').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
+            },
+            success: function(resp) {
+              // console.log(resp)
+              $('#forecast-table').html(resp);
+    
+              $("#forecast-table").removeClass('hidden');
+    
+              $("#forecast-table").show();
+              // $('#table').html(resp);
+            }
+        });
+    }
 
 }
