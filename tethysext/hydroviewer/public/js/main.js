@@ -65,7 +65,7 @@ $(function() {
         //var comid = sel_val[3];
         var model = 'ECMWF-RAPID';
 
-        $loading.removeClass('hidden');
+        $loading.removeClass('d-none');
         get_time_series(model, watershed, subbasin, comid, startdate);
         get_forecast_percent(watershed, subbasin, comid, startdate);
     });

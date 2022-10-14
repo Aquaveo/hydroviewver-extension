@@ -1,4 +1,4 @@
-var Map = function(){
+var Map_Object = function(){
     var layersObject = new Layers();
     var current_layer = layersObject.get_streams_wms();
     var geoglows_model = new GeoGlows();
@@ -74,6 +74,7 @@ var Map = function(){
 
     this.generate_events_map = function(){
         $('#stp-stream-toggle').on('change', function() {
+            console.log("change")
             layersObject.toggle_visibility_streams($('#stp-stream-toggle').prop('checked'))
         })
         $('#stp-stations-toggle').on('change', function() {
@@ -99,6 +100,7 @@ var Map = function(){
         })
     }
     this.get_warning_points = function(map,result) {
+        console.log(result)
         // var watershed = default_watershed_name.split(' (')[0].replace(' ', '_').toLowerCase();
         // $.ajax({
             // type: 'GET',
@@ -229,39 +231,105 @@ var Map = function(){
             }
             // var model = $('#model option:selected').text();
             var pixel = map.getEventPixel(evt.originalEvent);
-            var hit = map.forEachLayerAtPixel(pixel, function(layer) {
-                if (wms_layers.filter((wms_layer)=> layer== wms_layer).length > 0) {
-                    current_layer = layer;
-                    return true;
-                }
-            });
-            map.getTargetElement().style.cursor = hit ? 'pointer' : '';
+            // const hit = map.hasFeatureAtPixel(pixel);
+            // document.getElementById('map').style.cursor = hit ? 'pointer' : '';
+            const hit = map.hasFeatureAtPixel(pixel,
+                {
+                    layerFilter: function(layer) {
+                        // console.log(wms_layers.filter((wms_layer)=> layer== wms_layer).length)
+                        // return true;
+                        if (wms_layers.filter((wms_layer)=> layer== wms_layer).length > 0) {
+                            // console.log("true")
+                            current_layer = layer;
+                            map.getTargetElement().style.cursor = 'pointer';
+                            return true;
+                        }
+                        // return wms_layers.filter((wms_layer)=> layer== wms_layer).length > 0;
+                        // else{
+                        //     // map.getTargetElement().style.cursor = '';
+                        //     console.log("false")
+
+                        //     return false
+                        // }
+                    }
+                });
+            console.log(hit)
+
+            // document.getElementById('map').style.cursor = hit ? 'pointer' : '';
+            
+
+            // evt.map.getTargetElement().style.cursor = hit ? 'pointer' : '';
+
+
+
+            // var hit = map.forEachFeatureAtPixel(pixel, function(feature) {
+            //     return feature;
+            // }, {
+            //     layerFilter: function(layer) {
+            //         // console.log(wms_layers.filter((wms_layer)=> layer== wms_layer).length)
+                    
+            //         if (wms_layers.filter((wms_layer)=> layer== wms_layer).length > 0) {
+            //             console.log("oe")
+            //             current_layer = layer;
+            //             map.getTargetElement().style.cursor = 'pointer';
+
+            //             return true;
+
+            //         }
+            //         else{
+            //             map.getTargetElement().style.cursor = '';
+            //             return false                
+
+            //         }
+
+            //     }
+            // });
+            // map.getTargetElement().style.cursor = hit ? 'pointer' : '';
+
+            // console.log(hit)
+            // var hit = map.forEachLayerAtPixel(pixel, function(layer) {
+            //     if (wms_layers.filter((wms_layer)=> layer== wms_layer).length > 0) {
+            //         current_layer = layer;
+            //         return true;
+            //     }
+            // });
 
         })
         map.on("singleclick", function(evt) {
             // var model = $('#model option:selected').text();
-    
+            var myModal = new bootstrap.Modal(document.getElementById('graph'))
+            myModal.show()
+
+            // $("#graph").show();
+            console.log( $("#graph"))
             if (map.getTargetElement().style.cursor == "pointer") {
     
                 var view = map.getView();
                 var viewResolution = view.getResolution();
     
-                var wms_url = current_layer.getSource().getGetFeatureInfoUrl(evt.coordinate, viewResolution, view.getProjection(), { 'INFO_FORMAT': 'application/json' }); //Get the wms url for the clicked point
-                
-                $("#graph").modal('show');
+                var wms_url = current_layer.getSource().getFeatureInfoUrl(evt.coordinate, viewResolution, view.getProjection(), { 'INFO_FORMAT': 'application/json' }); //Get the wms url for the clicked point
+                // jQuery.noConflict(); 
+                // document.getElementById('graph').show();
+                // $("#graph").modal('show');
+                // $("#graph").show();
+
+                // setTimeout(function(){
+                //     //Do something if necessary
+
+                // }, 300);   
                 $("#tbody").empty()
-                $('#long-term-chart').addClass('hidden');
-                // $('#historical-chart').addClass('hidden');
-                // $('#fdc-chart').addClass('hidden');
-                // $('#seasonal_d-chart').addClass('hidden');
-                // $('#seasonal_m-chart').addClass('hidden');
-                // $('#download_forecast').addClass('hidden');
-                // $('#download_era_5').addClass('hidden');
+                $('#long-term-chart').addClass('d-none');
+                // $('#historical-chart').addClass('d-none');
+                // $('#fdc-chart').addClass('d-none');
+                // $('#seasonal_d-chart').addClass('d-none');
+                // $('#seasonal_m-chart').addClass('d-none');
+                // $('#download_forecast').addClass('d-none');
+                // $('#download_era_5').addClass('d-none');
     
-                $loading.removeClass('hidden');
+                // $loading.removeClass('d-none');
                 //Retrieving the details for clicked point via the url
-                $('#dates').addClass('hidden');
-                //$('#plot').addClass('hidden');
+                $('#dates').addClass('d-none');
+                //$('#plot').addClass('d-none');
                 $.ajax({
                     type: "GET",
                     url: wms_url,
@@ -286,9 +354,17 @@ var Map = function(){
                                 geoglows_model.get_time_series(forecast_url,watershed, subbasin, comid, startdate);
                             }
                             if (historic_data_url !== undefined) {
-                                geoglows_model.get_historical_data(historic_data_url,watershed, subbasin, comid, startdate);
+                                geoglows_model.get_historical_data(historic_data_url,watershed, subbasin, comid);
                             }
-                            
+                            if (flow_duration_curve_url !== undefined) {
+                                geoglows_model.get_flow_duration_curve(flow_duration_curve_url,watershed, subbasin, comid);
+                            }
+                            if (daily_seasonal_streamflow_url !== undefined) {
+                                geoglows_model.get_daily_seasonal_streamflow(daily_seasonal_streamflow_url,watershed, subbasin, comid);
+                            }
+                            if (monthly_seasonal_streamflow_url !== undefined) {
+                                geoglows_model.get_monthly_seasonal_streamflow(monthly_seasonal_streamflow_url,watershed, subbasin, comid);
+                            }
                         }
                         catch(err){
                             console.log(err)
@@ -308,7 +384,7 @@ var Map = function(){
     
                         var workspace = geoserver_workspace;
     
-                        $('#info').addClass('hidden');
+                        $('#info').addClass('d-none');
                         // add_feature(model, workspace, comid);
     
                     },
@@ -343,7 +419,7 @@ function popup_information_initializer(watershed_display_name,subbasin_display_n
 function view_watershed(map) {
 
 
-    $('#dates').addClass('hidden');
+    $('#dates').addClass('d-none');
 
     // var workspace = JSON.parse($('#geoserver_endpoint').val())[1];
     var workspace = geoserver_workspace
@@ -375,7 +451,7 @@ function view_watershed(map) {
 
     map.addLayer(wmsLayer);
     map.addLayer(wmsLayer2);
-    $loading.addClass('hidden');
+    $loading.addClass('d-none');
     // var ajax_url = geoserver_endpoint.replace(/\/$/, "") + '/' + workspace + '/' + watershed + '-' + subbasin + '-drainage_line/wfs?request=GetCapabilities';
     var ajax_url = geoserver_endpoint.replace(/\/$/, "") + '/' + workspace + '/' + streams_layer_name +'/wfs?request=GetCapabilities';
     // var ajax_url = 'https://geoserver.hydroshare.org/geoserver/wfs?request=GetCapabilities';

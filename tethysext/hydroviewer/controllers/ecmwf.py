@@ -322,6 +322,7 @@ class Ecmf:
         """""
         Returns ERA Interim hydrograph
         """""
+        print("get_historic_data")
 
         get_data = request.GET
         active_app = get_active_app(request, get_class=True)
@@ -423,6 +424,7 @@ class Ecmf:
             return JsonResponse({'error': 'No historic data found for the selected reach.'})
 
     def get_flow_duration_curve(self,request):
+        print("get_flow_duration_curve")
         get_data = request.GET
         active_app = get_active_app(request, get_class=True)
         SessionMaker = active_app.get_persistent_store_database("geoglows", as_sessionmaker=True)
@@ -440,6 +442,7 @@ class Ecmf:
             simulated_df.index = pd.to_datetime(simulated_df.index)
 
             hydroviewer_figure = geoglows.plots.flow_duration_curve(simulated_df, titles={'Reach ID': comid})
+            print(hydroviewer_figure)
             return hydroviewer_figure
 
 
@@ -474,18 +477,18 @@ class Ecmf:
             dayavg_df = hydrostats.data.daily_average(simulated_df, rolling=True)
 
             hydroviewer_figure = geoglows.plots.daily_averages(dayavg_df, titles={'Reach ID': comid})
+            return hydroviewer_figure
+            # chart_obj = PlotlyView(hydroviewer_figure)
 
-            chart_obj = PlotlyView(hydroviewer_figure)
-
-            context = {
-                'gizmo_object': chart_obj,
-            }
+            # context = {
+            #     'gizmo_object': chart_obj,
+            # }
 
             return render(request, self.gizmo_template_name, context)
 
         except Exception as e:
             print(str(e))
-            return JsonResponse({'error': 'No historic data found for calculating daily seasonality.'})
+            return {'error': 'No historic data found for calculating daily seasonality.'}
 
     def get_monthly_seasonal_streamflow(self,request):
         """
@@ -513,18 +516,18 @@ class Ecmf:
             monavg_df = hydrostats.data.monthly_average(simulated_df)
 
             hydroviewer_figure = geoglows.plots.monthly_averages(monavg_df, titles={'Reach ID': comid})
+            return hydroviewer_figure
+            # chart_obj = PlotlyView(hydroviewer_figure)
 
-            chart_obj = PlotlyView(hydroviewer_figure)
+            # context = {
+            #     'gizmo_object': chart_obj,
+            # }
 
-            context = {
-                'gizmo_object': chart_obj,
-            }
-
-            return render(request, self.gizmo_template_name, context)
+            # return render(request, self.gizmo_template_name, context)
 
         except Exception as e:
             print(str(e))
-            return JsonResponse({'error': 'No historic data found for calculating monthly seasonality.'})
+            return {'error': 'No historic data found for calculating monthly seasonality.'}
 
     def get_historic_data_csv(self,request):
         """""
@@ -686,7 +689,8 @@ class Ecmf:
             # watershed = get_data['watershed']
             # subbasin = get_data['subbasin']
 
-            res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/ForecastWarnings/?region=' + watershed + '-' + 'geoglows' + '&return_format=csv', verify=False).content
+            # res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/ForecastWarnings/?region=' + watershed + '-' + 'geoglows' + '&return_format=csv', verify=False).content
+            res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/ForecastWarnings/?region=' + watershed + '&return_format=csv', verify=False).content
 
             res_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
             cols = ['date_exceeds_return_period_2', 'date_exceeds_return_period_5', 'date_exceeds_return_period_10', 'date_exceeds_return_period_25', 'date_exceeds_return_period_50', 'date_exceeds_return_period_100']

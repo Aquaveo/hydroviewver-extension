@@ -2,12 +2,11 @@
 {% load static %}
 {% load tethys_gizmos %}  
 
-
-<div class="modal fade" id="graph" tabindex="-1" role="dialog" aria-labelledby="about-modal-label">
-    <div class="modal-dialog" role="document">
+<div class="modal" id="graph" tabindex="-1" role="dialog" aria-labelledby="about-modal-label">
+    <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-d-none="true">&times;</span></button>
           <div class="row">
             <div id="watershed-info" class="col-md-8"></div>
             <div class="col-md-4">
@@ -17,53 +16,12 @@
           <div id="interaction"></div>
         </div>
         <div class="modal-body">
-
-          <div class="row collapse">
-            <div class="medium-3 columns">
-              <ul class="vertical tabs" data-tabs id="example-tabs">
-                <li class="tabs-title is-active"><a href="#panel1v" aria-selected="true">Tab 1</a></li>
-                <li class="tabs-title"><a href="#panel2v">Tab 2</a></li>
-                <li class="tabs-title"><a href="#panel3v">Tab 3</a></li>
-                <li class="tabs-title"><a href="#panel4v">Tab 4</a></li>
-                <li class="tabs-title"><a href="#panel5v">Tab 5</a></li>
-                <li class="tabs-title"><a href="#panel6v">Tab 6</a></li>
-              </ul>
-            </div>
-            <div class="medium-9 columns">
-              <div class="tabs-content" data-tabs-content="example-tabs">
-                <div class="tabs-panel is-active" id="panel1v">
-                  <p>One</p>
-                  <p>Check me out! I'm a super cool Tab panel with text content!</p>
-                </div>
-                <div class="tabs-panel" id="panel2v">
-                  <p>Two</p>
-                  <img class="thumbnail" src="//foundation.zurb.com/sites/docs/assets/img/generic/rectangle-7.jpg">
-                </div>
-                <div class="tabs-panel" id="panel3v">
-                  <p>Three</p>
-                  <p>Check me out! I'm a super cool Tab panel with text content!</p>
-                </div>
-                <div class="tabs-panel" id="panel4v">
-                  <p>Four</p>
-                  <img class="thumbnail" src="//foundation.zurb.com/sites/docs/assets/img/generic/rectangle-2.jpg">
-                </div>
-                <div class="tabs-panel" id="panel5v">
-                  <p>Five</p>
-                  <p>Check me out! I'm a super cool Tab panel with text content!</p>
-                </div>
-                <div class="tabs-panel" id="panel6v">
-                  <p>Six</p>
-                  <img class="thumbnail" src="//foundation.zurb.com/sites/docs/assets/img/generic/rectangle-8.jpg">
-                </div>
-              </div>
-            </div>
-          </div>
           
 
           <!-- <div class= "horizontal_flex">
             <div class="tabs">
               
-              <li ><a id="forecast_tab_link" href="" aria-controls="forecast_tab" role="tab" data-toggle="tab">Forecast</a></li>
+              <li ><a id="forecast_tab_link" href="" aria-controls="forecast_tab" role="tab" data-bs-toggle="tab">Forecast</a></li>
               <li id="historical_tab_link_li"><a id="historical_tab_link" href="">Historical Simulation</a></li>
               <li id="flow_duration_tab_link_li"><a id="flow_duration_tab_link">Flow Duration Curve</a></li>
               <li id="seasonal_d_tab_link_li"><a id="seasonal_d_tab_link"> Daily Seasonal Streamflow</a></li>
@@ -77,13 +35,16 @@
 
           </div> -->
 
-          
+
+
+
+
           <!-- Nav tabs -->
           <ul class="nav nav-tabs" role="tablist">
-            <li role="presentation" class="active"><a id="forecast_tab_link" href="#forecast_tab" aria-controls="forecast_tab" role="tab" data-toggle="tab">Forecast</a></li>
-            <li role="presentation" id="historical_tab_link_li"class="hidden"><a id="historical_tab_link" href="#historical" aria-controls="historical" role="tab" data-toggle="tab">Historical Simulation</a></li>
-            <li role="presentation" id="flow_duration_tab_link_li" class="hidden"><a id="flow_duration_tab_link" href="#flow_duration" aria-controls="flow_duration" role="tab" data-toggle="tab">Historical Simulation Statistics</a></li>
-            <li role="presentation" class="hidden"><a href="#download" aria-controls="download" role="tab" data-toggle="tab">Download</a></li>
+            <li role="presentation" class="active"><a id="forecast_tab_link" href="#forecast_tab" aria-controls="forecast_tab" role="tab" data-bs-toggle="tab">Forecast</a></li>
+            <li role="presentation" id="historical_tab_link_li"class="d-none"><a id="historical_tab_link" href="#historical" aria-controls="historical" role="tab" data-bs-toggle="tab">Historical Simulation</a></li>
+            <li role="presentation" id="flow_duration_tab_link_li" class="d-none"><a id="flow_duration_tab_link" href="#flow_duration" aria-controls="flow_duration" role="tab" data-bs-toggle="tab">Historical Simulation Statistics</a></li>
+            <li role="presentation" class="d-none"><a href="#download" aria-controls="download" role="tab" data-bs-toggle="tab">Download</a></li>
           </ul>
   
           <!-- Tab panes -->
@@ -91,10 +52,10 @@
             <div role="tabpanel" class="tab-pane active" id="forecast_tab">
               <div class="panel panel-default">
                 <div class="panel-body">
-                  <div id="dates" class="hidden form-group" style="padding: 30px 30px 20px 0">
+                  <div id="dates" class="d-none form-group" style="padding: 30px 30px 20px 0">
 
                   </div>
-                  <div class="flex-container-row"><img id="view-file-loading" class="view-file hidden" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
+                  <div class="flex-container-row"><img id="view-file-loading" class="view-file d-none" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
                   <div id="long-term-chart"></div>
                   <div class="forecast-table" id="forecast-table" style="display:none">
                       <div id="table">{# The table of forecast go here #}</div>
@@ -102,41 +63,41 @@
                 </div>
               </div>
             </div> <!-- /.tab-pane -->
-            <div role="tabpanel" class="tab-pane hidden" id="historical">
+            <div role="tabpanel" class="tab-pane d-none" id="historical">
               <div class="panel panel-default">
-                <div class="flex-container-row"><img id="his-view-file-loading" class="view-file hidden" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
+                <div class="flex-container-row"><img id="his-view-file-loading" class="view-file d-none" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
                 <div id="historical-chart" class="panel-body"></div>
               </div>
             </div><!-- /.tab-pane -->
             
-            <div role="tabpanel" class="tab-pane hidden" id="flow_duration_curve">
+            <div role="tabpanel" class="tab-pane d-none" id="flow_duration_curve">
               <div class="panel panel-default">
-                <div class="flex-container-row"><img id="fdc-view-file-loading" class="view-file hidden" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
+                <div class="flex-container-row"><img id="fdc-view-file-loading" class="view-file d-none" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
                 <div id='fdc-chart' class="panel-body"></div>
               </div>
             </div><!-- /.tab-pane -->
             
-            <div role="tabpanel" class="tab-pane hidden" id="seasonal_d">
+            <div role="tabpanel" class="tab-pane d-none" id="seasonal_d">
               <div class="panel panel-default">
-                <div class="flex-container-row"><img id="seasonal_d-view-file-loading" class="view-file hidden" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
+                <div class="flex-container-row"><img id="seasonal_d-view-file-loading" class="view-file d-none" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
                 <div id='seasonal_d-chart' class="panel-body"></div>
               </div>
             </div><!-- /.tab-pane -->
 
-            <div role="tabpanel" class="tab-pane hidden" id="seasonal_m">
+            <div role="tabpanel" class="tab-pane d-none" id="seasonal_m">
               <div class="panel panel-default">
-                <div class="flex-container-row"><img id="seasonal_m-view-file-loading" class="view-file hidden" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
+                <div class="flex-container-row"><img id="seasonal_m-view-file-loading" class="view-file d-none" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
                 <div id='seasonal_m-chart' class="panel-body"></div>
               </div>
             </div><!-- /.tab-pane -->
 
-            <!-- <div role="tabpanel" class="tab-pane hidden" id="flow_duration">
+            <!-- <div role="tabpanel" class="tab-pane d-none" id="flow_duration">
               <div class="panel panel-default">
-                <div class="flex-container-row"><img id="fdc-view-file-loading" class="view-file hidden" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
+                <div class="flex-container-row"><img id="fdc-view-file-loading" class="view-file d-none" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
                 <div id='fdc-chart' class="panel-body"></div>
-                <div class="flex-container-row"><img id="seasonal_d-view-file-loading" class="view-file hidden" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
+                <div class="flex-container-row"><img id="seasonal_d-view-file-loading" class="view-file d-none" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
                 <div id='seasonal_d-chart' class="panel-body"></div>
-                <div class="flex-container-row"><img id="seasonal_m-view-file-loading" class="view-file hidden" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
+                <div class="flex-container-row"><img id="seasonal_m-view-file-loading" class="view-file d-none" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
                 <div id='seasonal_m-chart' class="panel-body"></div>
               </div>
             </div> -->
@@ -145,13 +106,13 @@
               <div class="panel panel-default">
                 <div class="panel-body">
                   <h6>Download Forecast Data</h6>
-                  <div id="download_forecast" class="btn-group hidden long-term-select" role="group">
+                  <div id="download_forecast" class="btn-group d-none long-term-select" role="group">
                     <a class="btn btn-success" role="button" id="submit-download-forecast">
                       <span class="glyphicon glyphicon-play"></span> Download Forecast
                     </a>
                   </div>
                   <h6>Download ERA 5 Data</h6>
-                  <div id="download_era_5" class="btn-group hidden" role="group">
+                  <div id="download_era_5" class="btn-group d-none" role="group">
                     <a class="btn btn-info" role="button" id="submit-download-5-csv">
                       <span class="glyphicon glyphicon-play"></span> Download ERA 5 Data
                     </a>
@@ -161,9 +122,9 @@
             </div>
           </div>
         </div>
-        <div id="info" class="hidden"></div>
+        <div id="info" class="d-none"></div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>

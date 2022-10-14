@@ -1,0 +1,72 @@
+{% load static %}
+
+<div class="d-flex align-items-start">
+    <div class="nav flex-column nav-pills me-3 align-items-start" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+      <button class="nav-link active" id="v-pills-forecast-tab" data-bs-toggle="pill" data-bs-target="#v-pills-forecast" type="button" role="tab" aria-controls="v-pills-forecast" aria-selected="true">Forecast</button>
+      <button class="nav-link" id="v-pills-historical-simulation-tab" data-bs-toggle="pill" data-bs-target="#v-pills-historical-simulation" type="button" role="tab" aria-controls="v-pills-historical-simulation" aria-selected="false">Historical Simulation</button>
+      <button class="nav-link" id="v-pills-flow-duration-curve-tab" data-bs-toggle="pill" data-bs-target="#v-pills-flow-duration-curve" type="button" role="tab" aria-controls="v-pills-flow-duration-curve" aria-selected="false">Flow Duration Curve</button>
+      <button class="nav-link" id="v-pills-daily-seasonal-streamflow-tab" data-bs-toggle="pill" data-bs-target="#v-pills-daily-seasonal-streamflow" type="button" role="tab" aria-controls="v-pills-daily-seasonal-streamflow" aria-selected="false">Daily Seasonal Streamflow</button>
+      <button class="nav-link" id="v-pills-monthly-seasonal-streamflow-tab" data-bs-toggle="pill" data-bs-target="#v-pills-monthly-seasonal-streamflow" type="button" role="tab" aria-controls="v-pills-monthly-seasonal-streamflow" aria-selected="false">Monthly Seasonal Streamflow</button>
+
+      <button class="nav-link" id="v-pills-Download-tab" data-bs-toggle="pill" data-bs-target="#v-pills-Download" type="button" role="tab" aria-controls="v-pills-Download" aria-selected="false">Download</button>
+    </div>
+    <div class="tab-content" id="v-pills-tabContent">
+    
+      <div class="tab-pane fade show active" id="v-pills-forecast" role="tabpanel" aria-labelledby="v-pills-forecast-tab">
+        <div class="card">
+          <div>
+
+            <!-- <div class="card-header">
+                <div id="dates" class="d-none form-group " style="padding: 30px 30px 20px 0">
+
+                </div>
+            </div> -->
+            <div class="flex-container-row"><img id="view-file-loading" class="view-file d-none" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
+            <div id="long-term-chart" class="card-body">
+            </div>
+            <div class="forecast-table" id="forecast-table" style="display:none">
+                <div id="table">{# The table of forecast go here #}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="tab-pane fade" id="v-pills-historical-simulation" role="tabpanel" aria-labelledby="v-pills-historical-simulation-tab">
+        <div class="card">
+          <div class="flex-container-row"><img id="his-view-file-loading" class="view-file d-none" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
+          <div id="historical-chart" class="card-body"></div>
+        </div>
+      </div>
+      
+
+      
+      <div class="tab-pane fade" id="v-pills-flow-duration-curve" role="tabpanel" aria-labelledby="v-pills-flow-duration-curve-tab">
+        <div class="card">
+            <div class="flex-container-row"><img id="fdc-view-file-loading" class="view-file d-none" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
+            <div id='fdc-chart' class="card-body"></div>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="v-pills-daily-seasonal-streamflow" role="tabpanel" aria-labelledby="v-pills-daily-seasonal-streamflow-tab">
+
+        <div class="card">
+            <div class="flex-container-row"><img id="seasonal_d-view-file-loading" class="view-file d-none" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
+            <div id='seasonal_d-chart' class="card-body"></div>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="v-pills-monthly-seasonal-streamflow" role="tabpanel" aria-labelledby="v-pills-monthly-seasonal-streamflow-tab">
+
+        <div class="card">
+            <div class="flex-container-row"><img id="seasonal_m-view-file-loading" class="view-file d-none" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
+            <div id='seasonal_m-chart' class="card-body"></div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="v-pills-Download" role="tabpanel" aria-labelledby="v-pills-Download-tab">
+
+        <div class="card">
+            <div class="flex-container-row"><img id="Download-view-file-loading" class="view-file d-none" src="{% static base_name|add:'/images/loader.gif' %}" /></div>
+            <div id='Download-chart' class="card-body"></div>
+        </div>
+      </div>
+    </div>
+</div>
