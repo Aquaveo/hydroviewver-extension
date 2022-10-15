@@ -1,12 +1,54 @@
 {% load static %}
-
 <div class="d-flex flex-column align-items-start">
     <div class="nav flex-row nav-pills me-3 align-items-start" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-      <button class="nav-link active" id="v-pills-forecast-tab" data-bs-toggle="pill" data-bs-target="#v-pills-forecast" type="button" role="tab" aria-controls="v-pills-forecast" aria-selected="true">Forecast</button>
-      <button class="nav-link" id="v-pills-historical-simulation-tab" data-bs-toggle="pill" data-bs-target="#v-pills-historical-simulation" type="button" role="tab" aria-controls="v-pills-historical-simulation" aria-selected="false">Historical Simulation</button>
-      <button class="nav-link" id="v-pills-flow-duration-curve-tab" data-bs-toggle="pill" data-bs-target="#v-pills-flow-duration-curve" type="button" role="tab" aria-controls="v-pills-flow-duration-curve" aria-selected="false">Flow Duration Curve</button>
-      <button class="nav-link" id="v-pills-daily-seasonal-streamflow-tab" data-bs-toggle="pill" data-bs-target="#v-pills-daily-seasonal-streamflow" type="button" role="tab" aria-controls="v-pills-daily-seasonal-streamflow" aria-selected="false">Daily Seasonal Streamflow</button>
-      <button class="nav-link" id="v-pills-monthly-seasonal-streamflow-tab" data-bs-toggle="pill" data-bs-target="#v-pills-monthly-seasonal-streamflow" type="button" role="tab" aria-controls="v-pills-monthly-seasonal-streamflow" aria-selected="false">Monthly Seasonal Streamflow</button>
+      <button class="nav-link active" id="v-pills-forecast-tab" data-bs-toggle="pill" data-bs-target="#v-pills-forecast" type="button" role="tab" aria-controls="v-pills-forecast" aria-selected="true">
+        <span id="forecast-loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        <span>
+          Forecast 
+        </span>
+        <span id="forecast-good" class="d-none"><i class="bi bi-check-circle-fill"></i></span>
+        <span id="forecast-bad" class="d-none"><i class="bi bi-x-circle-fill"></i></i></span>
+
+
+      </button>
+      <button class="nav-link" id="v-pills-historical-simulation-tab" data-bs-toggle="pill" data-bs-target="#v-pills-historical-simulation" type="button" role="tab" aria-controls="v-pills-historical-simulation" aria-selected="false">   
+        <span id="historical-simulation-loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        <span>
+          Historical Simulation 
+        </span>
+        <span id="historical-simulation-good" class="d-none"><i class="bi bi-check-circle-fill"></i></span>
+        <span id="historical-simulation-bad" class="d-none"><i class="bi bi-x-circle-fill"></i></span>
+
+      </button>
+      <button class="nav-link" id="v-pills-flow-duration-curve-tab" data-bs-toggle="pill" data-bs-target="#v-pills-flow-duration-curve" type="button" role="tab" aria-controls="v-pills-flow-duration-curve" aria-selected="false">
+        <span id="flow-duration-curve-loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        <span>
+          Flow Duration Curve
+        </span>
+        <span id="flow-duration-curve-good" class="d-none"><i class="bi bi-check-circle-fill"></i></span>
+        <span id="flow-duration-curve-bad" class="d-none"><i class="bi bi-x-circle-fill"></i></span>
+
+
+      </button>
+      <button class="nav-link" id="v-pills-daily-seasonal-streamflow-tab" data-bs-toggle="pill" data-bs-target="#v-pills-daily-seasonal-streamflow" type="button" role="tab" aria-controls="v-pills-daily-seasonal-streamflow" aria-selected="false">
+        <span id="daily-seasonal-streamflow-loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        <span>
+          Daily Seasonal Streamflow
+        </span>
+        <span id="daily-seasonal-streamflow-good" class="d-none"><i class="bi bi-check-circle-fill"></i></span>
+        <span id="daily-seasonal-streamflow-bad" class="d-none"><i class="bi bi-x-circle-fill"></i></span>
+
+
+      </button>
+      <button class="nav-link" id="v-pills-monthly-seasonal-streamflow-tab" data-bs-toggle="pill" data-bs-target="#v-pills-monthly-seasonal-streamflow" type="button" role="tab" aria-controls="v-pills-monthly-seasonal-streamflow" aria-selected="false">
+        <span id="monthly-seasonal-streamflow-loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        <span>
+          Monthly Seasonal Streamflow
+        </span>
+        <span id="monthly-seasonal-streamflow-good" class="d-none"><i class="bi bi-check-circle-fill"></i></span>
+        <span id="monthly-seasonal-streamflow-bad" class="d-none"><i class="bi bi-x-circle-fill"></i></span>
+
+      </button>
     </div>
     <div class="tab-content" id="v-pills-tabContent">
     
@@ -59,3 +101,19 @@
 
     </div>
 </div>
+
+<script>
+
+  window.onresize = function() {
+    try{
+      $('#graph .modal-body .tab-pane.active .js-plotly-plot').each(function(){
+        Plotly.Plots.resize($(this)[0]);
+      });
+    }
+    catch{
+      console.log("not resizing")
+    }
+
+  };
+
+</script>

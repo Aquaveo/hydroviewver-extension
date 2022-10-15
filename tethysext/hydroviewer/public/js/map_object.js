@@ -297,8 +297,7 @@ var Map_Object = function(){
         })
         map.on("singleclick", function(evt) {
             // var model = $('#model option:selected').text();
-            var myModal = new bootstrap.Modal(document.getElementById('graph'))
-            myModal.show()
+
 
             // $("#graph").show();
             console.log( $("#graph"))
@@ -368,6 +367,11 @@ var Map_Object = function(){
                             if (monthly_seasonal_streamflow_url !== undefined) {
                                 geoglows_model.get_monthly_seasonal_streamflow(monthly_seasonal_streamflow_url,watershed, subbasin, comid);
                             }
+                            setTimeout(function(){
+                                var myModal = new bootstrap.Modal(document.getElementById('graph'))
+                                myModal.show();
+                            },500)
+
                         }
                         catch(err){
                             console.log(err)

@@ -1,11 +1,15 @@
 var GeoGlows = function(){
 
     this.get_time_series = function (url,watershed, subbasin, comid, startdate) {
-        // $loading.removeClass('d-none');
+        $('#forecast-good').addClass('d-none');
+        $('#forecast-bad').addClass('d-none');
+        $('#forecast-loading').removeClass('d-none');
+        
+        $('#view-file-loading').removeClass('d-none');
         $('#long-term-chart').addClass('d-none');
         $('#dates').addClass('d-none');
-        
         $('#long-term-chart').empty();
+
 
         $.ajax({
             type: 'GET',
@@ -20,7 +24,10 @@ var GeoGlows = function(){
                 $('#info').html('<p class="alert alert-danger" style="text-align: center"><strong>An unknown error occurred while retrieving the forecast</strong></p>');
                 $('#info').removeClass('d-none');
                 // $loading.addClass('d-none');
-    
+                $('#view-file-loading').addClass('d-none');
+                $('#forecast-bad').removeClass('d-none');
+                $('#forecast-loading').addClass('d-none');
+
                 setTimeout(function() {
                     $('#info').addClass('d-none')
                 }, 5000);
@@ -29,9 +36,13 @@ var GeoGlows = function(){
                 if (!data.error) {
                     $('#dates').removeClass('d-none');
                     // $loading.addClass('d-none');
+                    $('#view-file-loading').addClass('d-none');
+
                     $('#long-term-chart').removeClass('d-none');
                     // log(data)
                     $('#long-term-chart').html(data);
+                    $('#forecast-good').removeClass('d-none');
+                    $('#forecast-loading').addClass('d-none');
     
                     //resize main graph
                     Plotly.Plots.resize($("#long-term-chart .js-plotly-plot")[0]);
@@ -64,9 +75,12 @@ var GeoGlows = function(){
         });
     }
     this.get_historical_data = function(url,watershed, subbasin, comid){
+        $('#historical-simulation-good').addClass('d-none');
+        $('#historical-simulation-bad').addClass('d-none');
+        $('#historical-simulation-loading').removeClass('d-none');
+
         $('#his-view-file-loading').removeClass('d-none');
         $('#historical-chart').addClass('d-none');
-       
         $('#historical-chart').empty();
         console.log(comid)
         m_downloaded_historical_streamflow = true;
@@ -87,6 +101,9 @@ var GeoGlows = function(){
                     $('#historical-chart').html(data);
                     $('#historical-chart').removeClass('d-none');
                     Plotly.Plots.resize($("#historical-chart .js-plotly-plot")[0]);
+                    
+                    $('#historical-simulation-good').removeClass('d-none');
+                    $('#historical-simulation-loading').addClass('d-none');
     
                     // var params = {
                     //     watershed_name: watershed,
@@ -106,7 +123,9 @@ var GeoGlows = function(){
                     $('#info').html('<p class="alert alert-danger" style="text-align: center"><strong>An unknown error occurred while retrieving the historic data</strong></p>');
                     $('#info').removeClass('d-none');
                     $('#his-view-file-loading').addClass('d-none');
-    
+                    $('#historical-simulation-bad').removeClass('d-none');
+                    $('#historical-simulation-loading').addClass('d-none');
+
                     setTimeout(function() {
                         $('#info').addClass('d-none')
                     }, 5000);
@@ -118,6 +137,10 @@ var GeoGlows = function(){
     }
 
     this.get_flow_duration_curve = function (url, watershed, subbasin, comid) {
+        $('#flow-duration-curve-good').addClass('d-none');
+        $('#flow-duration-curve-bad').addClass('d-none');
+        $('#flow-duration-curve-loading').removeClass('d-none');
+        
         $('#fdc-view-file-loading').removeClass('d-none');
         m_downloaded_flow_duration = true;
         $.ajax({
@@ -136,11 +159,17 @@ var GeoGlows = function(){
                     $('#fdc-chart').html(data);
                     Plotly.Plots.resize($("#fdc-chart .js-plotly-plot")[0]);
 
+                    $('#flow-duration-curve-good').removeClass('d-none');
+                    $('#flow-duration-curve-loading').addClass('d-none');
+                
                 } else if (data.error) {
                     $('#info').html('<p class="alert alert-danger" style="text-align: center"><strong>An unknown error occurred while retrieving the historic data</strong></p>');
                     $('#info').removeClass('d-none');
                     $('#fdc-view-file-loading').addClass('d-none');
-    
+
+                    $('#flow-duration-curve-bad').removeClass('d-none');
+                    $('#flow-duration-curve-loading').addClass('d-none');
+
                     setTimeout(function() {
                         $('#info').addClass('d-none')
                     }, 5000);
@@ -151,6 +180,11 @@ var GeoGlows = function(){
         });
     };
     this.get_daily_seasonal_streamflow = function (url, watershed, subbasin, comid) {
+
+        $('#daily-seasonal-streamflow-good').addClass('d-none');
+        $('#daily-seasonal-streamflow-bad').addClass('d-none');
+        $('#daily-seasonal-streamflow-loading').removeClass('d-none');
+
         $('#seasonal_d-view-file-loading').removeClass('d-none');
         m_downloaded_flow_duration = true;
         $.ajax({
@@ -168,12 +202,18 @@ var GeoGlows = function(){
                     $('#seasonal_d-chart').removeClass('d-none');
                     $('#seasonal_d-chart').html(data);
                     Plotly.Plots.resize($("#seasonal_d-chart .js-plotly-plot")[0]);
+                    
+                    $('#daily-seasonal-streamflow-good').removeClass('d-none');
+                    $('#daily-seasonal-streamflow-loading').addClass('d-none');
 
                 } else if (data.error) {
                     $('#info').html('<p class="alert alert-danger" style="text-align: center"><strong>An unknown error occurred while retrieving the historic data</strong></p>');
                     $('#info').removeClass('d-none');
                     $('#fdc-view-file-loading').addClass('d-none');
-    
+
+                    $('#daily-seasonal-streamflow-bad').removeClass('d-none');
+                    $('#daily-seasonal-streamflow-loading').addClass('d-none');
+                    
                     setTimeout(function() {
                         $('#info').addClass('d-none')
                     }, 5000);
@@ -184,7 +224,12 @@ var GeoGlows = function(){
         });
     };
     this.get_monthly_seasonal_streamflow = function (url, watershed, subbasin, comid) {
+        $('#monthly-seasonal-streamflow-good').addClass('d-none');
+        $('#monthly-seasonal-streamflow-bad').addClass('d-none');
+        $('#monthly-seasonal-streamflow-loading').removeClass('d-none');
+        
         $('#seasonal_m-view-file-loading').removeClass('d-none');
+        
         m_downloaded_flow_duration = true;
         $.ajax({
             type: 'GET',
@@ -202,11 +247,17 @@ var GeoGlows = function(){
                     $('#seasonal_m-chart').html(data);
                     Plotly.Plots.resize($("#seasonal_m-chart .js-plotly-plot")[0]);
 
+                    $('#monthly-seasonal-streamflow-good').removeClass('d-none');
+                    $('#monthly-seasonal-streamflow-loading').addClass('d-none');
+
+
                 } else if (data.error) {
                     $('#info').html('<p class="alert alert-danger" style="text-align: center"><strong>An unknown error occurred while retrieving the historic data</strong></p>');
                     $('#info').removeClass('d-none');
                     $('#fdc-view-file-loading').addClass('d-none');
-    
+
+                    $('#monthly-seasonal-streamflow-bad').removeClass('d-none');
+                    $('#monthly-seasonal-streamflow-loading').addClass('d-none');
                     setTimeout(function() {
                         $('#info').addClass('d-none')
                     }, 5000);
