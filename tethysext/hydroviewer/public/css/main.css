@@ -1,5 +1,8 @@
 
-
+.tab-content{
+  min-width: 100%;
+  width: 100%;
+}
 #headerCustomButtons {
   margin-right: 15px;
   margin-left: 15px;

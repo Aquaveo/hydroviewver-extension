@@ -442,7 +442,7 @@ class Ecmf:
             simulated_df.index = pd.to_datetime(simulated_df.index)
 
             hydroviewer_figure = geoglows.plots.flow_duration_curve(simulated_df, titles={'Reach ID': comid})
-            print(hydroviewer_figure)
+            # print(hydroviewer_figure)
             return hydroviewer_figure
 
 

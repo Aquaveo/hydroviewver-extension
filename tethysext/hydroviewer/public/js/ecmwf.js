@@ -134,6 +134,8 @@ var GeoGlows = function(){
                     $('#fdc-view-file-loading').addClass('d-none');
                     $('#fdc-chart').removeClass('d-none');
                     $('#fdc-chart').html(data);
+                    Plotly.Plots.resize($("#fdc-chart .js-plotly-plot")[0]);
+
                 } else if (data.error) {
                     $('#info').html('<p class="alert alert-danger" style="text-align: center"><strong>An unknown error occurred while retrieving the historic data</strong></p>');
                     $('#info').removeClass('d-none');
@@ -165,6 +167,8 @@ var GeoGlows = function(){
                     $('#seasonal_d-view-file-loading').addClass('d-none');
                     $('#seasonal_d-chart').removeClass('d-none');
                     $('#seasonal_d-chart').html(data);
+                    Plotly.Plots.resize($("#seasonal_d-chart .js-plotly-plot")[0]);
+
                 } else if (data.error) {
                     $('#info').html('<p class="alert alert-danger" style="text-align: center"><strong>An unknown error occurred while retrieving the historic data</strong></p>');
                     $('#info').removeClass('d-none');
@@ -196,6 +200,8 @@ var GeoGlows = function(){
                     $('#seasonal_m-view-file-loading').addClass('d-none');
                     $('#seasonal_m-chart').removeClass('d-none');
                     $('#seasonal_m-chart').html(data);
+                    Plotly.Plots.resize($("#seasonal_m-chart .js-plotly-plot")[0]);
+
                 } else if (data.error) {
                     $('#info').html('<p class="alert alert-danger" style="text-align: center"><strong>An unknown error occurred while retrieving the historic data</strong></p>');
                     $('#info').removeClass('d-none');
