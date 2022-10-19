@@ -185,7 +185,7 @@ class Utilities:
             session.commit()
             return rperiods_df
     
-    def cache_forecast_records(self,active_app,cs_api_source,comid,session):
+    def cache_forecast_records(self,active_app,cs_api_source,comid,session,response_content=None):
         forecast_records_query = session.query(ForecastRecords).filter(ForecastRecords.reach_id == comid)
         session.commit()        
         if forecast_records_query.first() is not None:
@@ -194,10 +194,16 @@ class Utilities:
             records_df = records_df.drop(columns=['reach_id', 'id'])
             return records_df
         else:
-            res = requests.get(
-                active_app.get_custom_setting(cs_api_source) + '/api/ForecastRecords/?reach_id=' + comid + '&return_format=csv',
-                verify=False).content
-            records_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
+            if response_content is None:
+
+                res = requests.get(
+                    active_app.get_custom_setting(cs_api_source) + '/api/ForecastRecords/?reach_id=' + comid + '&return_format=csv',
+                    verify=False).content
+                records_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
+                
+            else:
+                records_df = pd.read_csv(io.StringIO(response_content), index_col=0)
+
             records_df.index = pd.to_datetime(records_df.index)
             records_df[records_df < 0] = 0
             records_df.index = records_df.index.to_series().dt.strftime("%Y-%m-%d %H:%M:%S")
@@ -209,10 +215,10 @@ class Utilities:
             session.commit()
             return records_df
 
-    def cache_historical_simulation(self,active_app,cs_api_source,comid,session):
+    def cache_historical_simulation(self,active_app,cs_api_source,comid,session,response_content=None):
         historical_simulation_query = session.query(HistoricalSimulation).filter(HistoricalSimulation.reach_id == comid)
         session.commit()
-
+        # print("hey", response_content)
         if historical_simulation_query.first() is not None:
             simulated_df = pd.read_sql(historical_simulation_query.statement, historical_simulation_query.session.bind, index_col='datetime')
             simulated_df = simulated_df.rename(columns={'stream_flow':'streamflow_m^3/s'})
@@ -220,10 +226,14 @@ class Utilities:
             return simulated_df
 
         else:
-            era_res = requests.get(active_app.get_custom_setting(cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv', verify=False).content
-            simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
+            if response_content is None:
+                era_res = requests.get(active_app.get_custom_setting(cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv', verify=False).content
+                simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
+            else:
+                simulated_df = pd.read_csv(io.StringIO(response_content), index_col=0)
+                
             simulated_df[simulated_df < 0] = 0
-            simulated_df.to_json(os.path.join(active_app.get_app_workspace().path,f'historical_data/{comid}.json'))
+            # simulated_df.to_json(os.path.join(active_app.get_app_workspace().path,f'historical_data/{comid}.json'))
             simulated_df.index = pd.to_datetime(simulated_df.index)
             simulated_df.index = simulated_df.index.to_series().dt.strftime("%Y-%m-%d")
             new_simulated_df = simulated_df.assign(reach_id=comid)[['reach_id'] + simulated_df.columns.tolist()]
