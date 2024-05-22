@@ -20,7 +20,7 @@ from tethys_sdk.gizmos import Button, DatePicker, PlotlyView, SelectInput
 from tethys_sdk.permissions import has_permission
 from ..model import ForecastRecords, HistoricalSimulation, ReturnPeriods
 import asyncio
-
+from .utilities import Utilities
 base_name = 'hydroviewer'
 
 #cs = custom setting
@@ -37,6 +37,9 @@ class Ecmf:
     # cs_geojson_path='static_GeoJSON_path'
     cs_keywords='keywords'
     cs_default_watershed_name='default_watershed_name'
+    cs_default_subbasin_name='default_subbasin_name'
+
+    utilities_object = Utilities()
     # cd_default_model_type = 'default_model_type'
     # # parameterized constructor
     # def __init__(self, cs_streams_layer, cs_stations_layer,cs_api_source,cs_reach_ids,cs_zoom_info,cs_workspace,cs_region,cs_geojson_path,cs_keywords):
@@ -107,43 +110,44 @@ class Ecmf:
             max_visible = max(stats_df.max())
 
             '''Getting Forecast Records'''
-            forecast_records_query = session.query(ForecastRecords).filter(ForecastRecords.reach_id == comid)
-            session.commit()
+            records_df = self.utilities_object.cache_forecast_records(active_app,self.cs_api_source,comid,session)
+            # forecast_records_query = session.query(ForecastRecords).filter(ForecastRecords.reach_id == comid)
+            # session.commit()
 
-            if forecast_records_query.first() is not None:
-                # print("we have records in db")
-                # records_df = pd.DataFrame.from_records(forecast_records_query.all()
-                #     , index='datetime'
-                #     , columns=['datetim', 'streamflow'])
-                # records_df = records_df.rename(columns={'stream_flow':'streamflow_m^3/s'})
-                records_df = pd.read_sql(forecast_records_query.statement, forecast_records_query.session.bind, index_col='datetime')
-                # print(records_df)
-                records_df = records_df.rename(columns={'stream_flow':'streamflow_m^3/s'})
-                # print(records_df)
+            # if forecast_records_query.first() is not None:
+            #     # print("we have records in db")
+            #     # records_df = pd.DataFrame.from_records(forecast_records_query.all()
+            #     #     , index='datetime'
+            #     #     , columns=['datetim', 'streamflow'])
+            #     # records_df = records_df.rename(columns={'stream_flow':'streamflow_m^3/s'})
+            #     records_df = pd.read_sql(forecast_records_query.statement, forecast_records_query.session.bind, index_col='datetime')
+            #     # print(records_df)
+            #     records_df = records_df.rename(columns={'stream_flow':'streamflow_m^3/s'})
+            #     # print(records_df)
 
-                records_df = records_df.drop(columns=['reach_id', 'id'])
+            #     records_df = records_df.drop(columns=['reach_id', 'id'])
                 
-                # print(records_df)
+            #     # print(records_df)
 
-            else:
-                # print("we dont have records in db")
+            # else:
+            #     # print("we dont have records in db")
 
-                res = requests.get(
-                    active_app.get_custom_setting(self.cs_api_source) + '/api/ForecastRecords/?reach_id=' + comid + '&return_format=csv',
-                    verify=False).content
+            #     res = requests.get(
+            #         active_app.get_custom_setting(self.cs_api_source) + '/api/ForecastRecords/?reach_id=' + comid + '&return_format=csv',
+            #         verify=False).content
 
-                records_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
-                records_df.index = pd.to_datetime(records_df.index)
-                records_df[records_df < 0] = 0
-                records_df.index = records_df.index.to_series().dt.strftime("%Y-%m-%d %H:%M:%S")
+            #     records_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
+            #     records_df.index = pd.to_datetime(records_df.index)
+            #     records_df[records_df < 0] = 0
+            #     records_df.index = records_df.index.to_series().dt.strftime("%Y-%m-%d %H:%M:%S")
                 
-                new_records_df = records_df.assign(reach_id=comid)[['reach_id'] + records_df.columns.tolist()]
-                # print(new_records_df)
-                new_records_df = new_records_df.rename(columns={'streamflow_m^3/s': 'stream_flow'})
-                new_records_df = new_records_df.reset_index()
-                # print(new_records_df.to_dict(orient="records"))
-                session.bulk_insert_mappings(ForecastRecords, new_records_df.to_dict(orient="records"))
-                session.commit()
+            #     new_records_df = records_df.assign(reach_id=comid)[['reach_id'] + records_df.columns.tolist()]
+            #     # print(new_records_df)
+            #     new_records_df = new_records_df.rename(columns={'streamflow_m^3/s': 'stream_flow'})
+            #     new_records_df = new_records_df.reset_index()
+            #     # print(new_records_df.to_dict(orient="records"))
+            #     session.bulk_insert_mappings(ForecastRecords, new_records_df.to_dict(orient="records"))
+            #     session.commit()
             records_df.index = pd.to_datetime(records_df.index)
             records_df = records_df.loc[records_df.index >= pd.to_datetime(stats_df.index[0] - dt.timedelta(days=8))]
             records_df = records_df.loc[records_df.index <= pd.to_datetime(stats_df.index[0] + dt.timedelta(days=2))]
@@ -162,29 +166,30 @@ class Ecmf:
                 max_visible = max(max(records_df.max()), max_visible)
 
             '''Getting Return Periods'''
-            return_periods_query = session.query(ReturnPeriods).filter(ReturnPeriods.reach_id == comid)
-            session.commit()
-            if return_periods_query.first() is not None:
-                # print("we have return periods in db")
-                rperiods_df = pd.read_sql(return_periods_query.statement, return_periods_query.session.bind)
-                # rperiods_df.set_index('reach_id')
-                # print(rperiods_df)
-                rperiods_df = rperiods_df.drop(columns=['reach_id', 'id'])
-                # print(rperiods_df)
-            else:
-                # print("we dont have return periods in db")
+            rperiods_df = self.utilities_object.cache_return_periods(active_app,self.cs_api_source,comid,session)
+            # return_periods_query = session.query(ReturnPeriods).filter(ReturnPeriods.reach_id == comid)
+            # session.commit()
+            # if return_periods_query.first() is not None:
+            #     # print("we have return periods in db")
+            #     rperiods_df = pd.read_sql(return_periods_query.statement, return_periods_query.session.bind)
+            #     # rperiods_df.set_index('reach_id')
+            #     # print(rperiods_df)
+            #     rperiods_df = rperiods_df.drop(columns=['reach_id', 'id'])
+            #     # print(rperiods_df)
+            # else:
+            #     # print("we dont have return periods in db")
 
-                res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/ReturnPeriods/?reach_id=' + comid + '&return_format=csv',
-                    verify=False).content
-                rperiods_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
-                new_records_df = rperiods_df
-                new_records_df = new_records_df.reset_index()
-                new_records_df = new_records_df.rename(columns={'rivid': 'reach_id'})
+            #     res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/ReturnPeriods/?reach_id=' + comid + '&return_format=csv',
+            #         verify=False).content
+            #     rperiods_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
+            #     new_records_df = rperiods_df
+            #     new_records_df = new_records_df.reset_index()
+            #     new_records_df = new_records_df.rename(columns={'rivid': 'reach_id'})
 
-                # print(new_records_df)
-                # print(new_records_df.to_dict(orient="records"))
-                session.bulk_insert_mappings(ReturnPeriods, new_records_df.to_dict(orient="records"))
-                session.commit()
+            #     # print(new_records_df)
+            #     # print(new_records_df.to_dict(orient="records"))
+            #     session.bulk_insert_mappings(ReturnPeriods, new_records_df.to_dict(orient="records"))
+            #     session.commit()
 
             r2 = int(rperiods_df.iloc[0]['return_period_2'])
 
@@ -245,14 +250,17 @@ class Ecmf:
     def get_available_dates_watershed(self,request):
         app = get_active_app(request, get_class=True)
         api_base_endpoint = app.get_custom_setting(self.cs_api_source)
-        watershed = app.get_custom_setting(self.cs_default_watershed_name).split(' (')[0].replace(' ', '_').lower();
+        # watershed = app.get_custom_setting(self.cs_default_watershed_name).split(' (')[0].replace(' ', '_').lower();
+        watershed = app.get_custom_setting(self.cs_default_watershed_name)
+
 
         # print(api_base_endpoint,watershed,subbasin)
         res = requests.get(
-            api_base_endpoint + '/api/AvailableDates/?region=' + watershed + '-' + 'geoglows',
+            # api_base_endpoint + '/api/AvailableDates/?region=' + watershed + '-' + 'geoglows',
+            api_base_endpoint + '/api/AvailableDates/?region=' + watershed ,
             verify=False)        
         data = res.json()
-        # print(data)
+        print(data)
         dates_array = (data.get('available_dates'))
 
         dates = []
@@ -314,77 +322,129 @@ class Ecmf:
         """""
         Returns ERA Interim hydrograph
         """""
+        print("get_historic_data")
 
         get_data = request.GET
         active_app = get_active_app(request, get_class=True)
-
+        SessionMaker = active_app.get_persistent_store_database("geoglows", as_sessionmaker=True)
+        session = SessionMaker()
         try:
             # model = get_data['model']
             comid = get_data['comid']
-            if not os.path.exists(os.path.join(active_app.get_app_workspace().path,f'historical_data/{comid}.json')):
-                era_res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv', verify=False).content
+            simulated_df = self.utilities_object.cache_historical_simulation(active_app,self.cs_api_source,comid,session)
+            # historical_simulation_query = session.query(HistoricalSimulation).filter(HistoricalSimulation.reach_id == comid)
+            # session.commit()
 
-                simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
-                simulated_df[simulated_df < 0] = 0
-                simulated_df.to_json(os.path.join(active_app.get_app_workspace().path,f'historical_data/{comid}.json'))
+            # if historical_simulation_query.first() is not None:
+            #     print("we have records in db for hs")
+            #     simulated_df = pd.read_sql(historical_simulation_query.statement, historical_simulation_query.session.bind, index_col='datetime')
+            #     # print(records_df)
+            #     simulated_df = simulated_df.rename(columns={'stream_flow':'streamflow_m^3/s'})
+            #     # print(records_df)
+
+            #     simulated_df = simulated_df.drop(columns=['reach_id', 'id'])
+                
+            #     # print(records_df)
+
+            # else:
+            #     # print("we dont have records in db")
+            #     era_res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv', verify=False).content
+
+            #     simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
+            #     simulated_df[simulated_df < 0] = 0
+            #     simulated_df.to_json(os.path.join(active_app.get_app_workspace().path,f'historical_data/{comid}.json'))
 
                 
-                simulated_df.index = pd.to_datetime(simulated_df.index)
-                simulated_df.index = simulated_df.index.to_series().dt.strftime("%Y-%m-%d")
-                simulated_df.index = pd.to_datetime(simulated_df.index)
+            #     simulated_df.index = pd.to_datetime(simulated_df.index)
+            #     simulated_df.index = simulated_df.index.to_series().dt.strftime("%Y-%m-%d")
+            #     new_simulated_df = simulated_df.assign(reach_id=comid)[['reach_id'] + simulated_df.columns.tolist()]
+            #     # print(new_records_df)
+            #     new_simulated_df = new_simulated_df.rename(columns={'streamflow_m^3/s': 'stream_flow'})
+            #     new_simulated_df = new_simulated_df.reset_index()
+            #     # print(new_records_df.to_dict(orient="records"))
+            #     session.bulk_insert_mappings(HistoricalSimulation, new_simulated_df.to_dict(orient="records"))
+            #     session.commit()
+
+            simulated_df.index = pd.to_datetime(simulated_df.index)
 
 
-            else:
-                simulated_df = pd.read_json(os.path.join(active_app.get_app_workspace().path,f'historical_data/{comid}.json'))
-                simulated_df[simulated_df < 0] = 0
-                simulated_df.index = pd.to_datetime(simulated_df.index)
-                simulated_df.index = simulated_df.index.to_series().dt.strftime("%Y-%m-%d")
-                simulated_df.index = pd.to_datetime(simulated_df.index)
+            # if not os.path.exists(os.path.join(active_app.get_app_workspace().path,f'historical_data/{comid}.json')):
+            #     era_res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv', verify=False).content
 
-            '''Getting Return Periods'''
-            res = requests.get(
-                active_app.get_custom_setting(self.cs_api_source) + '/api/ReturnPeriods/?reach_id=' + comid + '&return_format=csv',
-                verify=False).content
-            rperiods_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
+            #     simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
+            #     simulated_df[simulated_df < 0] = 0
+            #     simulated_df.to_json(os.path.join(active_app.get_app_workspace().path,f'historical_data/{comid}.json'))
+
+                
+            #     simulated_df.index = pd.to_datetime(simulated_df.index)
+            #     simulated_df.index = simulated_df.index.to_series().dt.strftime("%Y-%m-%d")
+            #     simulated_df.index = pd.to_datetime(simulated_df.index)
+
+
+            # else:
+            #     simulated_df = pd.read_json(os.path.join(active_app.get_app_workspace().path,f'historical_data/{comid}.json'))
+            #     simulated_df[simulated_df < 0] = 0
+            #     simulated_df.index = pd.to_datetime(simulated_df.index)
+            #     simulated_df.index = simulated_df.index.to_series().dt.strftime("%Y-%m-%d")
+            #     simulated_df.index = pd.to_datetime(simulated_df.index)
+
+            rperiods_df = self.utilities_object.cache_return_periods(active_app,self.cs_api_source,comid,session)
+
+            # return_periods_query = session.query(ReturnPeriods).filter(ReturnPeriods.reach_id == comid)
+            # session.commit()
+            # if return_periods_query.first() is not None:
+            #     # print("we have return periods in db")
+            #     rperiods_df = pd.read_sql(return_periods_query.statement, return_periods_query.session.bind)
+            #     # rperiods_df.set_index('reach_id')
+            #     # print(rperiods_df)
+            #     rperiods_df = rperiods_df.drop(columns=['reach_id', 'id'])
+            #     # print(rperiods_df)
+            # else:
+            #     # print("we dont have return periods in db")
+
+            #     res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/ReturnPeriods/?reach_id=' + comid + '&return_format=csv',
+            #         verify=False).content
+            #     rperiods_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
+            #     new_records_df = rperiods_df
+            #     new_records_df = new_records_df.reset_index()
+            #     new_records_df = new_records_df.rename(columns={'rivid': 'reach_id'})
+
+            #     # print(new_records_df)
+            #     # print(new_records_df.to_dict(orient="records"))
+            #     session.bulk_insert_mappings(ReturnPeriods, new_records_df.to_dict(orient="records"))
+            #     session.commit()
+
 
             hydroviewer_figure = geoglows.plots.historic_simulation(simulated_df, rperiods_df, titles={'Reach ID': comid})
             return hydroviewer_figure
-            # chart_obj = PlotlyView(hydroviewer_figure)
 
-            # context = {
-            #     'gizmo_object': chart_obj,
-            # }
-
-            # return render(request, self.gizmo_template_name, context)
 
         except Exception as e:
             print(str(e))
             return JsonResponse({'error': 'No historic data found for the selected reach.'})
 
     def get_flow_duration_curve(self,request):
+        print("get_flow_duration_curve")
         get_data = request.GET
         active_app = get_active_app(request, get_class=True)
-
+        SessionMaker = active_app.get_persistent_store_database("geoglows", as_sessionmaker=True)
+        session = SessionMaker()
         try:
             comid = get_data['comid']
+            simulated_df = self.utilities_object.cache_historical_simulation(active_app,self.cs_api_source,comid,session)
 
-            era_res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv', verify=False).content
+            # era_res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv', verify=False).content
 
-            simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
-            simulated_df[simulated_df < 0] = 0
-            simulated_df.index = pd.to_datetime(simulated_df.index)
-            simulated_df.index = simulated_df.index.to_series().dt.strftime("%Y-%m-%d")
+            # simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
+            # simulated_df[simulated_df < 0] = 0
+            # simulated_df.index = pd.to_datetime(simulated_df.index)
+            # simulated_df.index = simulated_df.index.to_series().dt.strftime("%Y-%m-%d")
             simulated_df.index = pd.to_datetime(simulated_df.index)
 
             hydroviewer_figure = geoglows.plots.flow_duration_curve(simulated_df, titles={'Reach ID': comid})
+            # print(hydroviewer_figure)
             return hydroviewer_figure
-                # chart_obj = PlotlyView(hydroviewer_figure)
 
-            # context = {
-            #     'gizmo_object': chart_obj,
-            # }
-
-            # return render(request, self.gizmo_template_name, context)
 
         except Exception as e:
             print(str(e))
@@ -396,37 +456,39 @@ class Ecmf:
         """
         get_data = request.GET
         active_app = get_active_app(request, get_class=True)
-
+        SessionMaker = active_app.get_persistent_store_database("geoglows", as_sessionmaker=True)
+        session = SessionMaker()
 
         try:
 
             comid = get_data['comid']
+            simulated_df = self.utilities_object.cache_historical_simulation(active_app,self.cs_api_source,comid,session)
 
-            era_res = requests.get(
-                active_app.get_custom_setting(self.cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv',
-                verify=False).content
+            # era_res = requests.get(
+            #     active_app.get_custom_setting(self.cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv',
+            #     verify=False).content
 
-            simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
-            simulated_df[simulated_df < 0] = 0
-            simulated_df.index = pd.to_datetime(simulated_df.index)
-            simulated_df.index = simulated_df.index.to_series().dt.strftime("%Y-%m-%d")
+            # simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
+            # simulated_df[simulated_df < 0] = 0
+            # simulated_df.index = pd.to_datetime(simulated_df.index)
+            # simulated_df.index = simulated_df.index.to_series().dt.strftime("%Y-%m-%d")
             simulated_df.index = pd.to_datetime(simulated_df.index)
 
             dayavg_df = hydrostats.data.daily_average(simulated_df, rolling=True)
 
             hydroviewer_figure = geoglows.plots.daily_averages(dayavg_df, titles={'Reach ID': comid})
+            return hydroviewer_figure
+            # chart_obj = PlotlyView(hydroviewer_figure)
 
-            chart_obj = PlotlyView(hydroviewer_figure)
-
-            context = {
-                'gizmo_object': chart_obj,
-            }
+            # context = {
+            #     'gizmo_object': chart_obj,
+            # }
 
             return render(request, self.gizmo_template_name, context)
 
         except Exception as e:
             print(str(e))
-            return JsonResponse({'error': 'No historic data found for calculating daily seasonality.'})
+            return {'error': 'No historic data found for calculating daily seasonality.'}
 
     def get_monthly_seasonal_streamflow(self,request):
         """
@@ -434,36 +496,38 @@ class Ecmf:
         """
         get_data = request.GET
         active_app = get_active_app(request, get_class=True)
-
+        SessionMaker = active_app.get_persistent_store_database("geoglows", as_sessionmaker=True)
+        session = SessionMaker()
 
         try:
             comid = get_data['comid']
+            simulated_df = self.utilities_object.cache_historical_simulation(active_app,self.cs_api_source,comid,session)
 
-            era_res = requests.get(
-                active_app.get_custom_setting(self.cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv',
-                verify=False).content
+            # era_res = requests.get(
+            #     active_app.get_custom_setting(self.cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv',
+            #     verify=False).content
 
-            simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
-            simulated_df[simulated_df < 0] = 0
-            simulated_df.index = pd.to_datetime(simulated_df.index)
-            simulated_df.index = simulated_df.index.to_series().dt.strftime("%Y-%m-%d")
+            # simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
+            # simulated_df[simulated_df < 0] = 0
+            # simulated_df.index = pd.to_datetime(simulated_df.index)
+            # simulated_df.index = simulated_df.index.to_series().dt.strftime("%Y-%m-%d")
             simulated_df.index = pd.to_datetime(simulated_df.index)
 
             monavg_df = hydrostats.data.monthly_average(simulated_df)
 
             hydroviewer_figure = geoglows.plots.monthly_averages(monavg_df, titles={'Reach ID': comid})
+            return hydroviewer_figure
+            # chart_obj = PlotlyView(hydroviewer_figure)
 
-            chart_obj = PlotlyView(hydroviewer_figure)
+            # context = {
+            #     'gizmo_object': chart_obj,
+            # }
 
-            context = {
-                'gizmo_object': chart_obj,
-            }
-
-            return render(request, self.gizmo_template_name, context)
+            # return render(request, self.gizmo_template_name, context)
 
         except Exception as e:
             print(str(e))
-            return JsonResponse({'error': 'No historic data found for calculating monthly seasonality.'})
+            return {'error': 'No historic data found for calculating monthly seasonality.'}
 
     def get_historic_data_csv(self,request):
         """""
@@ -550,12 +614,13 @@ class Ecmf:
             print(str(e))
             return JsonResponse({'error': 'No forecast data found.'})
 
-    def forecastpercent(self,request):
+    def get_forecast_percent(self,request):
 
         # Check if its an ajax post request
         get_data = request.GET
         active_app = get_active_app(request, get_class=True)
-
+        SessionMaker = active_app.get_persistent_store_database("geoglows", as_sessionmaker=True)
+        session = SessionMaker()
 
         try:
 
@@ -597,22 +662,25 @@ class Ecmf:
             ensemble_df.index = pd.to_datetime(ensemble_df.index)
 
             '''Getting Return Periods'''
-            res = requests.get(
-                active_app.get_custom_setting(self.cs_api_source) + '/api/ReturnPeriods/?reach_id=' + comid + '&return_format=csv',
-                verify=False).content
-            rperiods_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
+            rperiods_df = self.utilities_object.cache_return_periods(active_app,self.cs_api_source,comid,session)
+
+            # res = requests.get(
+            #     active_app.get_custom_setting(self.cs_api_source) + '/api/ReturnPeriods/?reach_id=' + comid + '&return_format=csv',
+            #     verify=False).content
+            # rperiods_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
 
             table = geoglows.plots.probabilities_table(stats_df, ensemble_df, rperiods_df)
-
-            return HttpResponse(table)
+            return table
+            # return HttpResponse(table)
 
         except Exception:
-            return JsonResponse({'error': 'No data found for the selected station.'})
+            return {'error': 'No data found for the selected station.'}
 
     def get_warning_points(self,request):
         get_data = request.GET
         active_app = get_active_app(request, get_class=True)
-        watershed = active_app.get_custom_setting(self.cs_default_watershed_name).split(' (')[0].replace(' ', '_').lower();
+        # watershed = active_app.get_custom_setting(self.cs_default_watershed_name).split(' (')[0].replace(' ', '_').lower();
+        watershed = active_app.get_custom_setting(self.cs_default_watershed_name)
 
         # peru_id_path = os.path.join(app_workspace.path, 'peru_reachids.csv')
         reach_id_paths = active_app.get_custom_setting(self.cs_reach_ids)
@@ -624,7 +692,8 @@ class Ecmf:
             # watershed = get_data['watershed']
             # subbasin = get_data['subbasin']
 
-            res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/ForecastWarnings/?region=' + watershed + '-' + 'geoglows' + '&return_format=csv', verify=False).content
+            # res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/ForecastWarnings/?region=' + watershed + '-' + 'geoglows' + '&return_format=csv', verify=False).content
+            res = requests.get(active_app.get_custom_setting(self.cs_api_source) + '/api/ForecastWarnings/?region=' + watershed + '&return_format=csv', verify=False).content
 
             res_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
             cols = ['date_exceeds_return_period_2', 'date_exceeds_return_period_5', 'date_exceeds_return_period_10', 'date_exceeds_return_period_25', 'date_exceeds_return_period_50', 'date_exceeds_return_period_100']
@@ -758,7 +827,9 @@ class Ecmf:
         #                             disabled=True)
 
 
-        subasin = app.get_custom_setting(self.cs_default_watershed_name).split(' (')[1].replace(')', '').lower();
+        # subasin = app.get_custom_setting(self.cs_default_watershed_name).split(' (')[1].replace(')', '').lower()
+
+
         # dates = self._get_available_dates(api_base_endpoint,watershed,subasin)
 
         # Date Picker Options
@@ -785,7 +856,9 @@ class Ecmf:
         pre_context = {
             "base_name": base_name,
             "default_watershed_name": app.get_custom_setting(self.cs_default_watershed_name),
-            "default_subasin_name":subasin,
+            # "default_subasin_name":subasin,
+            "default_subasin_name":app.get_custom_setting(self.cs_default_subbasin_name),
+
             "geoserver_url": geoserver_base_url,
             "geoserver_workspace":geoserver_workspace,
             "geoserver_region": region,

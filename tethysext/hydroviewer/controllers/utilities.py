@@ -5,8 +5,10 @@ import os
 import json
 from osgeo import ogr
 from osgeo import osr
-
-
+import requests
+from ..model import ForecastRecords, HistoricalSimulation, ReturnPeriods
+import pandas as pd
+import io
 class Utilities:
     app = get_active_app() 
     @staticmethod
@@ -164,3 +166,80 @@ class Utilities:
         except Exception as e:
             print(str(e))
             return JsonResponse({'error': 'No shapefile found.'})
+
+    def cache_return_periods(self,active_app,cs_api_source,comid,session):
+        return_periods_query = session.query(ReturnPeriods).filter(ReturnPeriods.reach_id == comid)
+        session.commit()
+        if return_periods_query.first() is not None:
+            rperiods_df = pd.read_sql(return_periods_query.statement, return_periods_query.session.bind)
+            rperiods_df = rperiods_df.drop(columns=['reach_id', 'id'])
+            return rperiods_df
+        else:
+            res = requests.get(active_app.get_custom_setting(cs_api_source) + '/api/ReturnPeriods/?reach_id=' + comid + '&return_format=csv',
+                verify=False).content
+            rperiods_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
+            new_records_df = rperiods_df
+            new_records_df = new_records_df.reset_index()
+            new_records_df = new_records_df.rename(columns={'rivid': 'reach_id'})
+            session.bulk_insert_mappings(ReturnPeriods, new_records_df.to_dict(orient="records"))
+            session.commit()
+            return rperiods_df
+    
+    def cache_forecast_records(self,active_app,cs_api_source,comid,session,response_content=None):
+        forecast_records_query = session.query(ForecastRecords).filter(ForecastRecords.reach_id == comid)
+        session.commit()        
+        if forecast_records_query.first() is not None:
+            records_df = pd.read_sql(forecast_records_query.statement, forecast_records_query.session.bind, index_col='datetime')
+            records_df = records_df.rename(columns={'stream_flow':'streamflow_m^3/s'})
+            records_df = records_df.drop(columns=['reach_id', 'id'])
+            return records_df
+        else:
+            if response_content is None:
+
+                res = requests.get(
+                    active_app.get_custom_setting(cs_api_source) + '/api/ForecastRecords/?reach_id=' + comid + '&return_format=csv',
+                    verify=False).content
+                records_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
+                
+            else:
+                records_df = pd.read_csv(io.StringIO(response_content), index_col=0)
+
+            records_df.index = pd.to_datetime(records_df.index)
+            records_df[records_df < 0] = 0
+            records_df.index = records_df.index.to_series().dt.strftime("%Y-%m-%d %H:%M:%S")
+            
+            new_records_df = records_df.assign(reach_id=comid)[['reach_id'] + records_df.columns.tolist()]
+            new_records_df = new_records_df.rename(columns={'streamflow_m^3/s': 'stream_flow'})
+            new_records_df = new_records_df.reset_index()
+            session.bulk_insert_mappings(ForecastRecords, new_records_df.to_dict(orient="records"))
+            session.commit()
+            return records_df
+
+    def cache_historical_simulation(self,active_app,cs_api_source,comid,session,response_content=None):
+        historical_simulation_query = session.query(HistoricalSimulation).filter(HistoricalSimulation.reach_id == comid)
+        session.commit()
+        # print("hey", response_content)
+        if historical_simulation_query.first() is not None:
+            simulated_df = pd.read_sql(historical_simulation_query.statement, historical_simulation_query.session.bind, index_col='datetime')
+            simulated_df = simulated_df.rename(columns={'stream_flow':'streamflow_m^3/s'})
+            simulated_df = simulated_df.drop(columns=['reach_id', 'id'])
+            return simulated_df
+
+        else:
+            if response_content is None:
+                era_res = requests.get(active_app.get_custom_setting(cs_api_source) + '/api/HistoricSimulation/?reach_id=' + comid + '&return_format=csv', verify=False).content
+                simulated_df = pd.read_csv(io.StringIO(era_res.decode('utf-8')), index_col=0)
+            else:
+                simulated_df = pd.read_csv(io.StringIO(response_content), index_col=0)
+                
+            simulated_df[simulated_df < 0] = 0
+            # simulated_df.to_json(os.path.join(active_app.get_app_workspace().path,f'historical_data/{comid}.json'))
+            simulated_df.index = pd.to_datetime(simulated_df.index)
+            simulated_df.index = simulated_df.index.to_series().dt.strftime("%Y-%m-%d")
+            new_simulated_df = simulated_df.assign(reach_id=comid)[['reach_id'] + simulated_df.columns.tolist()]
+            new_simulated_df = new_simulated_df.rename(columns={'streamflow_m^3/s': 'stream_flow'})
+            new_simulated_df = new_simulated_df.reset_index()
+            session.bulk_insert_mappings(HistoricalSimulation, new_simulated_df.to_dict(orient="records"))
+            session.commit()
+
+            return simulated_df

@@ -29,7 +29,7 @@ function get_available_dates(model, watershed, subbasin, comid) {
                 );
 
                 setTimeout(function() {
-                    $('#dates').addClass('hidden')
+                    $('#dates').addClass('d-none')
                 }, 5000);
             },
             success: function(dates) {

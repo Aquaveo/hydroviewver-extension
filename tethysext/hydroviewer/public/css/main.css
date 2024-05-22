@@ -1,15 +1,8 @@
-.tab-content > .tab-pane,
-.pill-content > .pill-pane {
-  display: block;
-  height: 0;
-  overflow-y: hidden;
-}
 
-.tab-content > .active,
-.pill-content > .active {
-  height: auto;
+.tab-content{
+  min-width: 100%;
+  width: 100%;
 }
-
 #headerCustomButtons {
   margin-right: 15px;
   margin-left: 15px;
@@ -220,4 +213,20 @@
 #enddatepicker {
   align-items: center;
   float: right;
+}
+
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #ddd;
+  padding-left: 0;
+  margin-bottom: 0;
+  list-style: none;
+}
+.tabs>li>a{
+  color: #555;
+  cursor: default;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-bottom-color: transparent;
 }
